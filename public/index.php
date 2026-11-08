@@ -10,8 +10,12 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
     require $maintenance;
 }
 
-// Register the Composer autoloader...
-require __DIR__.'/../vendor/autoload.php';
+// Register the Composer autoloader. The direct cPanel package ships production
+// dependencies in build/vendor; a normal Git/Composer checkout uses vendor/.
+$autoload = is_file(__DIR__.'/../build/vendor/autoload.php')
+    ? __DIR__.'/../build/vendor/autoload.php'
+    : __DIR__.'/../vendor/autoload.php';
+require $autoload;
 
 // Bootstrap Laravel and handle the request...
 /** @var Application $app */

@@ -1,0 +1,72 @@
+NAi — DIRECT cPANEL INSTALLATION
+================================
+
+Package: {{PACKAGE_NAME}}
+Built:   {{BUILT_AT}}
+Source:  {{SOURCE_COMMIT}}
+
+Extracted FLAT: the folder containing this file is the project root.
+You should see app/, bootstrap/, build/, public/, storage/, artisan, and .htaccess.
+
+QUICK START
+-----------
+1. Upload and extract this ZIP in cPanel File Manager.
+   Example project root: /home/YOURUSER/nowills-nai
+
+2. Point the domain Document Root at the public/ folder inside it:
+   cPanel -> Domains -> your domain -> Document Root
+   Example: /home/YOURUSER/nowills-nai/public
+
+   If the Document Root cannot be changed, leave the upload where it is.
+   The .htaccess in this folder forwards everything into public/ instead.
+
+3. Create the database:
+   cPanel -> MySQL Databases
+   - create an EMPTY database
+   - create a user with a strong password
+   - add the user to the database with ALL PRIVILEGES
+   Copy the FULL prefixed names, e.g. myacct_nai — not just the suffix.
+
+4. Set permissions:
+   storage/ and everything inside: 755
+   bootstrap/cache/:               755
+   public/uploads/:                755
+   The project root must allow PHP to create .env.
+
+5. Open the installer:
+   https://your-domain.com/install.php
+
+   Open SETUP-TOKEN.txt in this folder with cPanel File Manager and paste the
+   one-time token into the installer. Then fill in the database details,
+   workspace/property name, and administrator account.
+
+6. Delete the installer.
+   The installer removes public/install.php, SETUP-TOKEN.txt, and
+   build/installer-config.php automatically when it finishes. If it reports a
+   cleanup warning, remove those files manually in File Manager.
+
+7. Add the cron entry:
+   cPanel -> Cron Jobs -> Once Per Minute
+
+   /usr/local/bin/php /home/YOURUSER/nowills-nai/artisan schedule:run >> /dev/null 2>&1
+
+   Replace the path with where you uploaded this package, and /usr/local/bin/php
+   with your host's real CLI PHP if it differs. The installer prints the exact line.
+
+8. Enable AutoSSL / Force HTTPS Redirect, visit /up, then sign in at /login.
+
+Full guide:  docs/INSTALL-CPANEL.md
+Module list: docs/MODULES.md
+
+You do NOT need Composer — the production packages are in build/vendor.
+You do NOT need SSH — the browser installer performs the setup artisan would.
+No Node.js, npm, Vite, or Docker build is required.
+
+IMPORTANT
+---------
+- This ZIP contains no .env, no database password, no admin password, and no
+  database data. Passwords are entered only on your server.
+- SETUP-TOKEN.txt is private. Do not upload it to public/ or share it.
+- The installer refuses a non-empty database unless it is resuming its own
+  clearly marked pending installation. It never drops existing tables.
+- Keep the project root outside public_html when possible; only public/ is web root.

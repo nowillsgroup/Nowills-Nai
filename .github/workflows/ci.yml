@@ -63,3 +63,84 @@ jobs:
           php artisan migrate --force
           php artisan migrate:fresh --force
           php artisan nai:check
+
+  cpanel-direct:
+    name: Direct cPanel ZIP browser install
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, openssl, pdo, pdo_mysql, xml, xmlwriter, curl, zip, ctype, fileinfo, tokenizer, dom, iconv
+          coverage: none
+          tools: composer:v2
+      - name: Build flat prebuilt ZIP
+        run: bash deploy/build-cpanel-zip.sh /tmp/NAi-cPanel-Direct-Install.zip
+      - name: Extract ZIP as a cPanel project root
+        run: |
+          mkdir -p /tmp/nai-cpanel-live
+          unzip -q /tmp/NAi-cPanel-Direct-Install.zip -d /tmp/nai-cpanel-live
+          test -f /tmp/nai-cpanel-live/build/vendor/autoload.php
+          test -f /tmp/nai-cpanel-live/public/install.php
+          test ! -e /tmp/nai-cpanel-live/.env
+      - name: Setup MySQL server
+        uses: ankane/setup-mysql@v1
+        with:
+          mysql-version: '8.0'
+      - name: Create empty installation database
+        run: |
+          mysql -e "CREATE DATABASE nai_install CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER 'nai_install'@'localhost' IDENTIFIED BY 'Installer-Test-123!'; GRANT ALL PRIVILEGES ON nai_install.* TO 'nai_install'@'localhost'; FLUSH PRIVILEGES;"
+      - name: Serve the extracted package
+        run: |
+          cat > /tmp/nai-cpanel-live/public/router.php <<'PHP'
+          <?php
+          $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
+          if ($path !== '/' && is_file(__DIR__.$path)) return false;
+          require __DIR__.'/index.php';
+          PHP
+          php -S 127.0.0.1:8088 -t /tmp/nai-cpanel-live/public /tmp/nai-cpanel-live/public/router.php >/tmp/nai-cpanel-server.log 2>&1 &
+          echo $! > /tmp/nai-cpanel-server.pid
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8088/install.php >/dev/null && break; sleep 1; done
+      - name: Install through the browser form and sign in
+        run: |
+          python3 - <<'PY'
+          import re, urllib.request, urllib.parse, urllib.error, http.cookiejar, pathlib, sys
+          base='http://127.0.0.1:8088'
+          root=pathlib.Path('/tmp/nai-cpanel-live')
+          jar=http.cookiejar.CookieJar(); opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+          html=opener.open(base+'/install.php', timeout=30).read().decode()
+          assert 'Install NAi on cPanel' in html
+          csrf=re.search(r'name="csrf" value="([^"]+)"', html).group(1)
+          token=re.search(r'\b[a-f0-9]{48}\b', (root/'SETUP-TOKEN.txt').read_text()).group(0)
+          fields={'csrf':csrf,'setup_token':token,'site_url':base,'workspace':'CI Workspace','db_host':'localhost','db_port':'3306','db_name':'nai_install','db_user':'nai_install','db_password':'Installer-Test-123!','admin_name':'CI Administrator','admin_email':'admin@example.com','admin_password':'Admin-Password-123!','admin_password_confirm':'Admin-Password-123!'}
+          response=opener.open(base+'/install.php', data=urllib.parse.urlencode(fields).encode(), timeout=180)
+          body=response.read().decode()
+          if 'NAi is ready' not in body:
+              print(body); sys.exit('Installer did not complete')
+          assert not (root/'public/install.php').exists(), 'installer was not deleted'
+          assert not (root/'SETUP-TOKEN.txt').exists(), 'setup token was not deleted'
+          assert not (root/'build/installer-config.php').exists(), 'token config was not deleted'
+          assert (root/'storage/app/installed.lock').exists()
+          assert (root/'.env').exists()
+          try:
+              code=opener.open(base+'/install.php', timeout=30).getcode()
+          except urllib.error.HTTPError as e:
+              code=e.code
+          assert code in (404,410), code
+          assert opener.open(base+'/up', timeout=30).getcode()==200
+          login=opener.open(base+'/login', timeout=30).read().decode()
+          token=re.search(r'name="_token" value="([^"]+)"', login).group(1)
+          after=opener.open(base+'/login', data=urllib.parse.urlencode({'_token':token,'email':'admin@example.com','password':'Admin-Password-123!'}).encode(), timeout=60)
+          assert after.geturl().endswith('/dashboard'), after.geturl()
+          assert opener.open(base+'/arena', timeout=30).getcode()==200
+          assert opener.open(base+'/notifications', timeout=30).getcode()==200
+          print('Direct cPanel browser installation, cleanup, health check, login, arena, and notifications verified.')
+          PY
+      - name: Verify database and show server log on failure
+        if: always()
+        run: |
+          mysql -D nai_install -e "SELECT email, role FROM users; SELECT COUNT(*) AS migrations FROM migrations;" || true
+          if [ -f /tmp/nai-cpanel-server.log ]; then tail -100 /tmp/nai-cpanel-server.log; fi
+          if [ -f /tmp/nai-cpanel-live/storage/logs/laravel.log ]; then tail -100 /tmp/nai-cpanel-live/storage/logs/laravel.log; fi

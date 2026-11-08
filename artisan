@@ -6,8 +6,12 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
-// Register the Composer autoloader...
-require __DIR__.'/vendor/autoload.php';
+// Register the Composer autoloader. The direct cPanel package ships production
+// dependencies in build/vendor; a normal Git/Composer checkout uses vendor/.
+$autoload = is_file(__DIR__.'/build/vendor/autoload.php')
+    ? __DIR__.'/build/vendor/autoload.php'
+    : __DIR__.'/vendor/autoload.php';
+require $autoload;
 
 // Bootstrap Laravel and handle the command...
 /** @var Application $app */

@@ -1,0 +1,6 @@
+# NAi does not execute uploaded files. Keep this directory non-executable.
+Options -Indexes -ExecCGI
+
+<FilesMatch "\.(?i:php[0-9]?|phtml|phar|cgi|pl|py|sh|html?|svg)$">
+    Require all denied
+</FilesMatch>

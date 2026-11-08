@@ -47,7 +47,24 @@
 
 No Node.js, npm, Vite, Docker, or container runtime is required.
 
-## Direct install on Hostinger (VPS or cPanel)
+## Direct cPanel ZIP — no Composer or SSH on the server
+
+For shared cPanel hosting, build the prebuilt browser-install package:
+
+```bash
+bash deploy/build-cpanel-zip.sh /path/to/NAi-cPanel-Direct-Install.zip
+```
+
+The ZIP extracts **flat** as the project root, bundles production dependencies in
+`build/vendor`, includes a root `.htaccess` fallback into `public/`, and provides
+`public/install.php`. Create an empty MySQL database/user in cPanel, set
+`storage/`, `bootstrap/cache/`, and `public/uploads/` to 755, then open
+`https://your-domain.com/install.php` with the private one-time token from
+`SETUP-TOKEN.txt`. The installer creates `.env`, migrates/seeds, creates the admin,
+caches production, prints the cron command, and deletes itself. Package guide:
+[`deploy/cpanel-package/docs/INSTALL-CPANEL.md`](deploy/cpanel-package/docs/INSTALL-CPANEL.md).
+
+## Direct install on Hostinger (VPS or cPanel from Git)
 
 The fastest path from Git to a running site. Full walkthrough: [`docs/HOSTINGER.md`](docs/HOSTINGER.md).
 

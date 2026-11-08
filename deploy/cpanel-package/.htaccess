@@ -1,0 +1,29 @@
+# NAi direct cPanel package — project-root fallback.
+# Preferred: set the domain Document Root to the public/ directory.
+# If the Document Root must remain this folder, forward requests into public/.
+
+Options -Indexes -MultiViews
+DirectoryIndex public/index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Never expose private project files, even when the document root is wrong.
+    RewriteRule (^|/)\.(env|git|user\.ini) - [F,L]
+    RewriteRule ^(app|bootstrap|build|config|database|deploy|docs|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+    RewriteRule (^|/)(artisan|composer\.(json|lock)|phpunit\.xml|install\.sh|SETUP-TOKEN\.txt|START-HERE\.txt|PACKAGE-INFO\.txt|README\.md)$ - [F,L]
+
+    # Keep the public URL space at / while serving files from public/.
+    RewriteRule ^$ public/index.php [L]
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Fail closed rather than serving source code if mod_rewrite is unavailable.
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>
+
+<FilesMatch "^(\.env.*|\.git.*|\.user\.ini|artisan|composer\.(json|lock)|phpunit\.xml|install\.sh|SETUP-TOKEN\.txt|START-HERE\.txt|PACKAGE-INFO\.txt|README\.md)$">
+    Require all denied
+</FilesMatch>
