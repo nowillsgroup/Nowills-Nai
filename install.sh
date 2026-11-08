@@ -105,13 +105,10 @@ else
 fi
 
 set_env() {
-  # set_env KEY VALUE — replace or append a key in .env (GNU/BSD sed safe).
-  local key="$1" val="$2"
-  if grep -qE "^${key}=" .env; then
-    "$PHP_BIN" -r '$f=".env";$k=$argv[1];$v=$argv[2];$s=file_get_contents($f);$s=preg_replace("/^".preg_quote($k,"/)."=.*$/m",$k."=".$v,$s);file_put_contents($f,$s);' "$key" "$val"
-  else
-    printf '%s=%s\n' "$key" "$val" >> .env
-  fi
+  # set_env KEY VALUE - replace or append a key in .env via the safe writer.
+  # Values are written literally and dotenv-quoted, so passwords with $, \, #,
+  # spaces, or quotes survive intact.
+  "$PHP_BIN" "$ROOT/deploy/env-set.php" .env "$1" "$2"
 }
 
 # APP_KEY (only generate when empty so re-runs don't invalidate encrypted data)
@@ -145,6 +142,18 @@ prompt() {
   fi
 }
 
+prompt_secret() {
+  # prompt_secret VAR "Question" — like prompt, but hides typed input.
+  local var="$1" question="$2" current val
+  current="$(printenv "$var" || true)"
+  if [ -n "$current" ]; then return; fi
+  if [ -t 0 ]; then
+    read -r -s -p "    $question: " val; echo
+    printf -v "$var" '%s' "$val"
+    export "$var"
+  fi
+}
+
 prompt APP_URL "Public APP_URL" "https://your-domain.com"
 [ -n "${APP_URL:-}" ] && set_env APP_URL "$APP_URL"
 
@@ -152,7 +161,7 @@ prompt DB_HOST "DB host" "127.0.0.1"
 prompt DB_PORT "DB port" "3306"
 prompt DB_DATABASE "DB database" "nai"
 prompt DB_USERNAME "DB username" "nai"
-prompt DB_PASSWORD "DB password" ""
+prompt_secret DB_PASSWORD "DB password (hidden)"
 set_env DB_CONNECTION mysql
 set_env DB_HOST "${DB_HOST:-127.0.0.1}"
 set_env DB_PORT "${DB_PORT:-3306}"
@@ -170,6 +179,14 @@ ok "Environment configured"
 # ---------------------------------------------------------------------------
 # 5. Database schema + baseline data
 # ---------------------------------------------------------------------------
+say "Checking database connection"
+if ! "$PHP_BIN" artisan db:show >/dev/null 2>&1; then
+  warn "Cannot connect to the database with the current .env values."
+  warn "Create the database and user first (see docs/HOSTINGER.md), then re-run."
+  die "Database connection failed (DB_HOST/DB_DATABASE/DB_USERNAME/DB_PASSWORD)."
+fi
+ok "Database reachable"
+
 say "Running migrations"
 "$PHP_BIN" artisan migrate --force
 ok "Migrations complete"
@@ -197,7 +214,7 @@ if [ "${SKIP_ADMIN:-0}" != "1" ]; then
   say "Initial administrator"
   prompt ADMIN_NAME "Admin name" "NAi Admin"
   prompt ADMIN_EMAIL "Admin email" ""
-  prompt ADMIN_PASSWORD "Admin password (min 12 chars)" ""
+  prompt_secret ADMIN_PASSWORD "Admin password (min 12 chars, hidden)"
   if [ -n "${ADMIN_EMAIL:-}" ] && [ -n "${ADMIN_PASSWORD:-}" ]; then
     if "$PHP_BIN" artisan nai:create-admin --name="${ADMIN_NAME:-NAi Admin}" --email="$ADMIN_EMAIL" --password="$ADMIN_PASSWORD"; then
       ok "Administrator created"

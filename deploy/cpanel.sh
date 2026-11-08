@@ -97,21 +97,39 @@ mkdir -p "$DEPLOYPATH/storage/app/private" \
 cd "$DEPLOYPATH"
 
 # ---------------------------------------------------------------------------
-# First-run environment bootstrap
-# ---------------------------------------------------------------------------
-if [ ! -f .env ]; then
-  say "Creating .env from .env.example — EDIT IT with your DB credentials, then re-deploy."
-  cp .env.example .env
-  "$PHP_BIN" artisan key:generate --force || true
-fi
-
-# ---------------------------------------------------------------------------
-# Build
+# Install dependencies FIRST — artisan cannot run without vendor/autoload.php
+# on a fresh checkout (vendor/ is excluded from the sync).
 # ---------------------------------------------------------------------------
 say "Installing dependencies"
 # shellcheck disable=SC2086
 COMPOSER_ALLOW_SUPERUSER=1 $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
+# ---------------------------------------------------------------------------
+# Environment bootstrap. On the very first deploy we create .env, generate the
+# key, then STOP before touching the database — the account owner must fill in
+# the cPanel DB credentials and APP_URL first. The next deploy finishes the build.
+# ---------------------------------------------------------------------------
+FIRST_RUN=0
+if [ ! -f .env ]; then
+  cp .env.example .env
+  FIRST_RUN=1
+fi
+if ! grep -qE '^APP_KEY=base64:' .env; then
+  "$PHP_BIN" artisan key:generate --force
+fi
+
+if [ "$FIRST_RUN" = "1" ]; then
+  chmod -R ug+rwX storage bootstrap/cache 2>/dev/null || true
+  say "First deploy complete — dependencies installed and .env created."
+  say "NEXT: edit $DEPLOYPATH/.env with your database credentials and APP_URL,"
+  say "then click 'Deploy HEAD Commit' again to run migrations and cache."
+  say "After that, create an admin: $PHP_BIN artisan nai:create-admin"
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Build (subsequent deploys — .env is already configured)
+# ---------------------------------------------------------------------------
 say "Migrating"
 "$PHP_BIN" artisan migrate --force
 "$PHP_BIN" artisan db:seed --force || true
@@ -125,5 +143,3 @@ say "Caching"
 chmod -R ug+rwX storage bootstrap/cache 2>/dev/null || true
 
 say "Deploy complete. Document root must be: $DEPLOYPATH/public"
-say "If this is the first deploy, edit $DEPLOYPATH/.env (DB + APP_URL), create an"
-say "admin with: $PHP_BIN artisan nai:create-admin, then re-deploy."
