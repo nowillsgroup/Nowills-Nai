@@ -107,6 +107,8 @@ img{max-width:100%}
 .stat-label{color:var(--muted);font-size:12.5px;margin-top:6px}
 .stat-trend{font-size:11px;color:var(--green);display:flex;align-items:center;gap:4px}
 .hero-card{position:relative;overflow:hidden;background:radial-gradient(1000px 300px at 0% 0%,rgba(56,189,248,.14),transparent 55%),radial-gradient(800px 300px at 100% 0%,rgba(236,72,153,.12),transparent 55%),var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.hero-card>div{min-width:0;max-width:100%}
+.hero-card .flex{flex-wrap:wrap}
 .hero-card h2{font-size:26px;margin:0 0 8px;letter-spacing:-.03em}
 .hero-card p{margin:0;color:var(--muted);max-width:620px}
 .gradient-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
