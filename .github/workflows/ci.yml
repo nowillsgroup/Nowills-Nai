@@ -85,13 +85,15 @@ jobs:
           test -f /tmp/nai-cpanel-live/build/vendor/autoload.php
           test -f /tmp/nai-cpanel-live/public/install.php
           test ! -e /tmp/nai-cpanel-live/.env
-      - name: Setup MySQL server
+      - name: Setup MySQL server and empty installation database
         uses: ankane/setup-mysql@v1
         with:
           mysql-version: '8.0'
-      - name: Create empty installation database
+          database: nai_install
+          user: nai_install
+      - name: Set the installation database password
         run: |
-          mysql -e "CREATE DATABASE nai_install CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER 'nai_install'@'localhost' IDENTIFIED BY 'Installer-Test-123!'; GRANT ALL PRIVILEGES ON nai_install.* TO 'nai_install'@'localhost'; FLUSH PRIVILEGES;"
+          mysql -u nai_install -e "ALTER_USER() IDENTIFIED BY 'Installer-Test-123!';"
       - name: Serve the extracted package
         run: |
           cat > /tmp/nai-cpanel-live/public/router.php <<'PHP'
@@ -141,6 +143,6 @@ jobs:
       - name: Verify database and show server log on failure
         if: always()
         run: |
-          mysql -D nai_install -e "SELECT email, role FROM users; SELECT COUNT(*) AS migrations FROM migrations;" || true
+          MYSQL_PWD=Installer-Test-123! mysql -u nai_install -D nai_install -e "SELECT email, role FROM users; SELECT COUNT(*) AS migrations FROM migrations;" || true
           if [ -f /tmp/nai-cpanel-server.log ]; then tail -100 /tmp/nai-cpanel-server.log; fi
           if [ -f /tmp/nai-cpanel-live/storage/logs/laravel.log ]; then tail -100 /tmp/nai-cpanel-live/storage/logs/laravel.log; fi
