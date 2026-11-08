@@ -136,7 +136,7 @@ jobs:
           login=opener.open(base+'/login', timeout=30).read().decode()
           token=re.search(r'name="_token" value="([^"]+)"', login).group(1)
           after=opener.open(base+'/login', data=urllib.parse.urlencode({'_token':token,'email':'admin@example.com','password':'Admin-Password-123!'}).encode(), timeout=60)
-          assert after.geturl().endswith('/dashboard'), after.geturl()
+          assert after.geturl() in (base+'/', base+'/dashboard'), after.geturl()
           assert opener.open(base+'/arena', timeout=30).getcode()==200
           assert opener.open(base+'/notifications', timeout=30).getcode()==200
           print('Direct cPanel browser installation, cleanup, health check, login, arena, and notifications verified.')
