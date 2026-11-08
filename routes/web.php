@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'show'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.attempt');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:12,1')->name('login.attempt');
     Route::post('/demo', [AuthController::class, 'demo'])->middleware('throttle:10,1')->name('login.demo');
 });
 

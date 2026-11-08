@@ -32,6 +32,7 @@
 - **Audit trail** — inventory changes, project/task changes, auth events, settings changes, and Arena interactions.
 - **Exports & backup** — CSV exports for inventory, activity, and monitoring history, plus a secret-free JSON workspace backup.
 - **Security headers** — CSP, nosniff, referrer policy, permissions policy; secure-cookie support for production.
+- **Sign-in experience** — animated neural-mesh brand canvas (reduced-motion aware), password reveal, Caps Lock detection, double-submit protection, per-account cooldowns with actionable messages, and a demo entry that only appears in demo mode.
 - **Settings** — workspace profile and encrypted Arena AI connection configuration.
 
 ## Requirements
@@ -187,7 +188,8 @@ Users → NAi (Laravel interface + orchestration) → Arena AI (development engi
 - Role-based authorization middleware and gates.
 - Arena API keys encrypted with Laravel `APP_KEY`.
 - Inventory stores metadata only; do not enter secrets in notes fields.
-- Login throttling and Arena prompt throttling enabled.
+- Login throttling (route-level plus a per-account/per-IP limiter), failed-attempt auditing, and Arena prompt throttling.
+- Sign-in errors are identical for unknown accounts and wrong passwords; passwords are never reflected back.
 - Security headers and production secure-cookie support.
 - All significant actions are written to the activity log.
 - Demo mode is explicit and disabled by default.
