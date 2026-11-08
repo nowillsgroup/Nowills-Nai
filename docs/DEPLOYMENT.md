@@ -88,12 +88,13 @@ Add the Laravel scheduler cron entry:
 * * * * * cd /var/www/nai && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-When `NAI_MONITORING_ENABLED=true`, NAi probes registered endpoints every five minutes, records check history, and opens/resolves incidents. `nai:monitor-prune` runs daily at 03:15 and trims history to `NAI_MONITORING_RETENTION_DAYS` (default 30). You can also run:
+When `NAI_MONITORING_ENABLED=true`, NAi probes registered endpoints every five minutes, records check history, and opens/resolves incidents. `nai:monitor-prune` runs daily at 03:15 and trims history to `NAI_MONITORING_RETENTION_DAYS` (default 30). `nai:import-prune` runs hourly to remove expired encrypted import reviews. You can also run:
 
 ```bash
 php artisan nai:monitor
 php artisan nai:monitor --dry-run
 php artisan nai:monitor-prune
+php artisan nai:import-prune
 ```
 
 See [MONITORING.md](MONITORING.md) for probe semantics, incident lifecycle, and retention.
@@ -106,3 +107,6 @@ See [MONITORING.md](MONITORING.md) for probe semantics, incident lifecycle, and 
 - Monitor `storage/logs/laravel.log`.
 - If you switch `QUEUE_CONNECTION` from `sync` to `database`, run a queue worker under systemd/supervisor.
 - Export operational backups with `php artisan nai:export` or Settings → Export workspace JSON.
+- Restore missing inventory/projects with the admin-only import review or `php artisan nai:import … --dry-run` / `--apply`; see [RESTORE.md](RESTORE.md). Imports never overwrite or delete.
+- For web imports, allow at least `upload_max_filesize=5M`, `post_max_size=6M`, and the equivalent proxy body size. Keep `storage/app/private` out of the web root.
+- Use a shared cache store (`CACHE_STORE=database` or Redis) on multi-node deployments so the workspace import lock is shared. Rotating `APP_KEY` invalidates pending encrypted import reviews.

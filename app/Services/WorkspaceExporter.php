@@ -18,6 +18,7 @@ class WorkspaceExporter
     {
         $arena = ArenaConnection::first();
         return [
+            'format_version' => WorkspaceImporter::VERSION,
             'exported_at' => now()->toIso8601String(),
             'platform' => 'NAi',
             'workspace' => Setting::where('key', 'workspace_name')->value('value') ?? config('nai.workspace'),

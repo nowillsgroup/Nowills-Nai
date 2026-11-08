@@ -42,6 +42,8 @@ $paths = match($name) {
  'eye' => '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
  'gauge' => '<path d="M4 19a9 9 0 1 1 16 0"/><path d="M12 15a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="m13.5 11.5 4-4"/>',
  'download' => '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+ 'upload' => '<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 21h14"/>',
+ 'file' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
  default => '<circle cx="12" cy="12" r="9"/>',
 };
 @endphp

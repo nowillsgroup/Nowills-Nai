@@ -30,7 +30,8 @@
 - **Global search** — `Ctrl/⌘ + K` across applications, repositories, databases, infrastructure, and projects.
 - **Team & roles** — admin, operator, viewer; role-based access control.
 - **Audit trail** — inventory changes, project/task changes, auth events, settings changes, and Arena interactions.
-- **Exports & backup** — CSV exports for inventory, activity, and monitoring history, plus a secret-free JSON workspace backup.
+- **Exports & backup** — CSV exports for inventory, activity, and monitoring history, plus a versioned, secret-free JSON workspace backup.
+- **Safe workspace import** — admin-only upload → validation → change plan → explicit confirmation; additive merge with ID remapping, conflict blocking, transactional apply, and no imported credentials, users, conversations, or historical health.
 - **Security headers** — CSP, nosniff, referrer policy, permissions policy; secure-cookie support for production.
 - **Sign-in experience** — animated neural-mesh brand canvas (reduced-motion aware), password reveal, Caps Lock detection, double-submit protection, per-account cooldowns with actionable messages, and a demo entry that only appears in demo mode.
 - **Settings** — workspace profile and encrypted Arena AI connection configuration.
@@ -132,7 +133,7 @@ composer install
 php vendor/bin/phpunit
 ```
 
-Feature tests cover the inventory, projects, Arena adapter boundary, roles, exports, and the monitoring/incident lifecycle. Tests use an in-memory SQLite database by default (`phpunit.xml`). Production runtime remains MySQL. GitHub Actions (`.github/workflows/ci.yml`) runs the suite on PHP 8.2–8.4 and validates migrations against a real MySQL server without Docker.
+Feature tests cover the inventory, projects, Arena adapter boundary, roles, exports, safe workspace import, and the monitoring/incident lifecycle. Tests use an in-memory SQLite database by default (`phpunit.xml`). Production runtime remains MySQL. GitHub Actions (`.github/workflows/ci.yml`) runs the suite on PHP 8.2–8.4 and validates migrations against a real MySQL server without Docker.
 
 ## Useful commands
 
@@ -143,7 +144,10 @@ php artisan arena:test           # test upstream Arena AI health endpoint
 php artisan nai:monitor          # probe endpoints, record history, update incidents
 php artisan nai:monitor-prune    # prune check history beyond the retention window
 php artisan nai:monitor --dry-run # probe without writing status changes
-php artisan nai:export           # secret-free JSON workspace backup
+php artisan nai:export           # versioned, secret-free JSON workspace backup
+php artisan nai:import backup.json --dry-run # validate and preview an additive import
+php artisan nai:import backup.json --apply   # apply reviewed additions only
+php artisan nai:import-prune     # remove expired encrypted import reviews
 php artisan nai:lint             # syntax-check PHP files and compile every Blade template
 php artisan migrate --force      # apply schema changes
 php artisan optimize             # cache config/routes/views for production
@@ -170,6 +174,7 @@ Serve the `public/` directory through Nginx/Apache + PHP-FPM. Keep `.env`, `stor
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Layer boundaries, services, data model |
 | [`docs/ARENA-INTEGRATION.md`](docs/ARENA-INTEGRATION.md) | Arena AI adapter contract and configuration states |
 | [`docs/MONITORING.md`](docs/MONITORING.md) | Probe semantics, uptime math, incident lifecycle, retention |
+| [`docs/RESTORE.md`](docs/RESTORE.md) | Versioned exports, additive import workflow, safety boundaries, limits |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | MySQL setup, web server, scheduler, operations |
 
 ## Architecture

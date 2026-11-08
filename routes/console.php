@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 Schedule::command('nai:monitor')->everyFiveMinutes()->withoutOverlapping()->when(fn () => (bool) config('nai.monitoring.enabled'));
 
 Schedule::command('nai:monitor-prune')->dailyAt('03:15')->withoutOverlapping();
+Schedule::command('nai:import-prune')->hourly()->withoutOverlapping();

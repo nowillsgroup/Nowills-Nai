@@ -81,7 +81,7 @@ class ExportController extends Controller
     {
         $filename = 'nai-workspace-'.now()->format('Ymd-His').'.json';
         return response()->streamDownload(function () use ($exporter) {
-            echo json_encode($exporter->snapshot(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        }, $filename, ['Content-Type' => 'application/json']);
+            echo json_encode($exporter->snapshot(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE);
+        }, $filename, ['Content-Type' => 'application/json', 'Cache-Control' => 'no-store, private']);
     }
 }

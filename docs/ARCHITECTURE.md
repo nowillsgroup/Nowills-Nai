@@ -36,7 +36,9 @@ NAi sits **on top of Arena AI**. It provides branding, workspace management, ope
 - `App\Services\WorkspaceContext` — workspace snapshot plus per-subject context (metadata, links, checks, incidents, tasks).
 - `App\Services\ResourceMonitor` — endpoint health probes, check history, incident transitions, retention pruning.
 - `App\Services\MonitoringStats` — bounded read-side aggregations (uptime, latency, sparklines) for the monitoring board.
-- `App\Services\WorkspaceExporter` — secret-free operational backup.
+- `App\Services\WorkspaceExporter` — versioned, secret-free operational backup.
+- `App\Services\WorkspaceImporter` — bounded validation, additive change planning, ID remapping, live revalidation, transactional apply.
+- `App\Services\ImportReviewStore` — encrypted, private, administrator-bound, one-time import reviews.
 - `App\Http\Middleware\SecurityHeaders` — baseline browser security headers.
 - `App\Http\Controllers` — dashboard, inventory, projects, Arena, settings, team, activity, search, auth.
 
@@ -58,7 +60,8 @@ Server-rendered Blade with a custom design system in `public/css/nai.css` and pr
 
 - Authentication required for all workspace routes.
 - `can:write` gate for mutating inventory/project/Arena actions.
-- `role:admin` middleware for settings and team management.
+- `role:admin` middleware for settings, team management, and workspace imports.
+- Imports are additive only: no overwrites/deletes, no imported users/credentials/settings/conversations/monitoring history, and imported health starts Unknown.
 - Arena API key encrypted via Eloquent `encrypted` cast.
 - No credential fields in inventory forms.
 - Login throttling and audit logging.

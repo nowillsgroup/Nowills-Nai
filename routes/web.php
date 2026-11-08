@@ -5,6 +5,7 @@ use App\Http\Controllers\ArenaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\ProjectController;
@@ -66,6 +67,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
         Route::get('/settings/export', [ExportController::class, 'workspace'])->name('settings.export');
+        Route::get('/settings/import', [ImportController::class, 'index'])->name('settings.import');
+        Route::post('/settings/import/preview', [ImportController::class, 'preview'])->middleware('throttle:10,1')->name('settings.import.preview');
+        Route::post('/settings/import/apply', [ImportController::class, 'apply'])->middleware('throttle:6,1')->name('settings.import.apply');
+        Route::post('/settings/import/cancel', [ImportController::class, 'cancel'])->middleware('throttle:20,1')->name('settings.import.cancel');
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
