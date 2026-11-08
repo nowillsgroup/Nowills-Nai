@@ -93,7 +93,7 @@ jobs:
           user: nai_install
       - name: Set the installation database password
         run: |
-          mysql -u nai_install -e "ALTER_USER() IDENTIFIED BY 'Installer-Test-123!';"
+          sudo mysql -u root -e "ALTER USER 'nai_install'@'localhost' IDENTIFIED BY 'Installer-Test-123!';" 2>/tmp/nai-mysql-step.err || { echo "::error::$(cat /tmp/nai-mysql-step.err)"; exit 1; }
       - name: Serve the extracted package
         run: |
           cat > /tmp/nai-cpanel-live/public/router.php <<'PHP'
