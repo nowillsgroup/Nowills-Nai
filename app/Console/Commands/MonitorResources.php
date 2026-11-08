@@ -13,9 +13,11 @@ class MonitorResources extends Command
     public function handle(ResourceMonitor $monitor): int
     {
         $summary = $monitor->runAll((bool) $this->option('dry-run'));
-        $this->table(['Checked', 'Healthy', 'Degraded', 'Offline', 'Skipped'], [[
+        $this->table(['Checked', 'Healthy', 'Degraded', 'Offline', 'Skipped', 'Incidents opened', 'Resolved'], [[
             $summary['checked'], $summary['healthy'], $summary['degraded'], $summary['offline'], $summary['skipped'],
+            $summary['incidents_opened'], $summary['incidents_resolved'],
         ]]);
+        if ($this->option('dry-run')) $this->comment('Dry run: no status, history, or incident records were written.');
         return self::SUCCESS;
     }
 }

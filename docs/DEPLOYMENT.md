@@ -88,12 +88,15 @@ Add the Laravel scheduler cron entry:
 * * * * * cd /var/www/nai && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-When `NAI_MONITORING_ENABLED=true`, NAi probes registered endpoints every five minutes. You can also run:
+When `NAI_MONITORING_ENABLED=true`, NAi probes registered endpoints every five minutes, records check history, and opens/resolves incidents. `nai:monitor-prune` runs daily at 03:15 and trims history to `NAI_MONITORING_RETENTION_DAYS` (default 30). You can also run:
 
 ```bash
 php artisan nai:monitor
 php artisan nai:monitor --dry-run
+php artisan nai:monitor-prune
 ```
+
+See [MONITORING.md](MONITORING.md) for probe semantics, incident lifecycle, and retention.
 
 ## 7. Operations
 

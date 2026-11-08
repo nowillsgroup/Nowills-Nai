@@ -12,6 +12,7 @@ return [
         'enabled' => (bool) env('NAI_MONITORING_ENABLED', false),
         'timeout' => (int) env('NAI_MONITORING_TIMEOUT', 3),
         'verify_ssl' => (bool) env('NAI_MONITORING_VERIFY_SSL', true),
+        'retention_days' => (int) env('NAI_MONITORING_RETENTION_DAYS', 30),
     ],
 
     'arena' => [

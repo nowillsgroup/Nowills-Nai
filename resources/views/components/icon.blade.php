@@ -40,6 +40,7 @@ $paths = match($name) {
  'layers' => '<path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>',
  'terminal' => '<path d="m4 17 6-5-6-5"/><path d="M12 19h8"/>',
  'eye' => '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+ 'gauge' => '<path d="M4 19a9 9 0 1 1 16 0"/><path d="M12 15a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="m13.5 11.5 4-4"/>',
  'download' => '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
  default => '<circle cx="12" cy="12" r="9"/>',
 };

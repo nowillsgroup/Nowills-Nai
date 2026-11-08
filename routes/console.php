@@ -9,3 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('nai:monitor')->everyFiveMinutes()->withoutOverlapping()->when(fn () => (bool) config('nai.monitoring.enabled'));
+
+Schedule::command('nai:monitor-prune')->dailyAt('03:15')->withoutOverlapping();

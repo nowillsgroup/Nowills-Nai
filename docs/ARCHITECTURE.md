@@ -31,7 +31,8 @@ NAi sits **on top of Arena AI**. It provides branding, workspace management, ope
 - `App\Services\WorkspaceContext` — compact operational context for Arena prompts.
 - `App\Support\Inventory` — inventory type definitions and validation.
 - `App\Support\Audit` — activity log helper.
-- `App\Services\ResourceMonitor` — endpoint health probes.
+- `App\Services\ResourceMonitor` — endpoint health probes, check history, incident transitions, retention pruning.
+- `App\Services\MonitoringStats` — bounded read-side aggregations (uptime, latency, sparklines) for the monitoring board.
 - `App\Services\WorkspaceExporter` — secret-free operational backup.
 - `App\Http\Middleware\SecurityHeaders` — baseline browser security headers.
 - `App\Http\Controllers` — dashboard, inventory, projects, Arena, settings, team, activity, search, auth.

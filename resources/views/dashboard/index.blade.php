@@ -21,6 +21,14 @@ $donut = $offset ? 'conic-gradient('.implode(',', $gradientParts).')' : 'conic-g
     </div>
 </div>
 
+@if($openIncidentCount)
+<div class="incident-banner">
+    <span class="incident-marker {{ $openIncidents->first()->severity }}"><x-icon name="alert" :size="18" /></span>
+    <div><strong>{{ $openIncidentCount }} open incident{{ $openIncidentCount === 1 ? '' : 's' }} need attention</strong><span>{{ $openIncidents->map(fn ($i) => $i->resource_name.' ('.$i->durationForHumans().')')->implode(' · ') }}</span></div>
+    <a href="{{ route('monitoring.index') }}" class="btn"><x-icon name="gauge" :size="16" />Open monitoring</a>
+</div>
+@endif
+
 <div class="grid grid-4" style="margin-bottom:18px">
     <div class="card stat-card"><div class="stat-top"><div class="stat-icon"><x-icon name="apps" /></div><span class="stat-trend"><x-icon name="activity" :size="12" />Live inventory</span></div><div class="stat-value">{{ $stats['applications'] }}</div><div class="stat-label">Applications</div></div>
     <div class="card stat-card"><div class="stat-top"><div class="stat-icon purple"><x-icon name="git" /></div></div><div class="stat-value">{{ $stats['repositories'] }}</div><div class="stat-label">Repositories</div></div>

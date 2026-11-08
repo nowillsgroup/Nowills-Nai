@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\Application;
 use App\Models\DatabaseConnection;
+use App\Models\Incident;
 use App\Models\Infrastructure;
 use App\Models\Project;
 use App\Models\Repository;
@@ -34,6 +35,8 @@ class DashboardController extends Controller
             'apps' => $apps, 'projects' => $projects, 'infra' => $infra,
             'activities' => Activity::with('user')->latest('created_at')->limit(7)->get(),
             'arenaStatus' => $arena->status(), 'arenaConfigured' => $arena->isConfigured(),
+            'openIncidents' => Incident::open()->orderByRaw("CASE severity WHEN 'critical' THEN 0 WHEN 'major' THEN 1 ELSE 2 END")->orderByDesc('started_at')->limit(3)->get(),
+            'openIncidentCount' => Incident::open()->count(),
             'resourceMix' => [
                 ['label' => 'Applications', 'value' => Application::count(), 'color' => '#38bdf8'],
                 ['label' => 'Repositories', 'value' => Repository::count(), 'color' => '#818cf8'],

@@ -117,7 +117,7 @@ class PlatformTest extends TestCase
     public function test_monitor_dry_run_does_not_mutate_status(): void
     {
         config(['nai.monitoring.timeout' => 1]);
-        Http::fake(['monitor.example.test/*' => Http::response('ok', 200)]);
+        Http::fake(['*' => Http::response('ok', 200)]);
         $app = Application::create(['name' => 'Monitor App', 'slug' => 'monitor-app', 'url' => 'https://monitor.example.test', 'environment' => 'production', 'status' => 'unknown']);
         $result = app(\App\Services\ResourceMonitor::class)->checkApplication($app, true);
         $this->assertSame(1, $result['checked']);

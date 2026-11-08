@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\ResourceCheck;
 use App\Services\WorkspaceExporter;
 use App\Support\Inventory;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -47,6 +48,24 @@ class ExportController extends Controller
             fputcsv($handle, ['Timestamp', 'User', 'Action', 'Description']);
             Activity::with('user')->orderBy('id')->chunk(200, function ($items) use ($handle) {
                 foreach ($items as $item) fputcsv($handle, array_map([$this, 'csvSafe'], [$item->created_at?->toIso8601String(), $item->user?->email ?? 'system', $item->action, $item->description]));
+            });
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    public function checks(): StreamedResponse
+    {
+        $filename = 'nai-monitoring-'.now()->format('Ymd-His').'.csv';
+        return response()->streamDownload(function () {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Checked at', 'Resource type', 'Resource', 'Target', 'Status', 'HTTP code', 'Latency (ms)', 'Source', 'Message']);
+            ResourceCheck::orderBy('id')->chunk(500, function ($items) use ($handle) {
+                foreach ($items as $item) {
+                    fputcsv($handle, array_map([$this, 'csvSafe'], [
+                        $item->checked_at?->toIso8601String(), $item->resource_type, $item->resource_name, $item->target,
+                        $item->status, $item->http_code, $item->latency_ms, $item->source, $item->message,
+                    ]));
+                }
             });
             fclose($handle);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);

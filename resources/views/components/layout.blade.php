@@ -1,5 +1,6 @@
 @props(['title' => 'Dashboard', 'subtitle' => null])
 @php($engineStatus = $arenaStatus ?? app(\App\Services\ArenaGateway::class)->status())
+@php($navIncidents = \App\Models\Incident::open()->count())
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,6 +33,7 @@
             <a href="{{ route('inventory.index','databases') }}" class="nav-item {{ request()->is('inventory/databases*') ? 'active' : '' }}"><x-icon name="database" :size="18" /><span>Databases</span></a>
             <a href="{{ route('inventory.index','infrastructure') }}" class="nav-item {{ request()->is('inventory/infrastructure*') ? 'active' : '' }}"><x-icon name="server" :size="18" /><span>Infrastructure</span></a>
             <a href="{{ route('projects.index') }}" class="nav-item {{ request()->routeIs('projects.*') ? 'active' : '' }}"><x-icon name="folder" :size="18" /><span>Projects</span></a>
+            <a href="{{ route('monitoring.index') }}" class="nav-item {{ request()->routeIs('monitoring.*') ? 'active' : '' }}"><x-icon name="gauge" :size="18" /><span>Monitoring</span>@if($navIncidents)<span class="nav-pill alert">{{ $navIncidents }}</span>@endif</a>
             <div class="nav-label">System</div>
             <a href="{{ route('activity.index') }}" class="nav-item {{ request()->routeIs('activity.*') ? 'active' : '' }}"><x-icon name="activity" :size="18" /><span>Activity</span></a>
             @can('admin')

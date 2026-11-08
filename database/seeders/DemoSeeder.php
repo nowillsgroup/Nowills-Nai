@@ -109,5 +109,7 @@ class DemoSeeder extends Seeder
             ];
             foreach ($events as [$action, $desc, $uid, $minutes]) Activity::create(['user_id' => $uid, 'action' => $action, 'description' => $desc, 'created_at' => now()->subMinutes($minutes)]);
         }
+
+        $this->call(MonitoringDemoSeeder::class);
     }
 }

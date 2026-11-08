@@ -23,7 +23,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/search', SearchController::class)->name('search');
-    Route::post('/monitoring/run', [MonitoringController::class, 'run'])->middleware('can:write')->name('monitoring.run');
+    Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
+    Route::post('/monitoring/run', [MonitoringController::class, 'run'])->middleware('can:write')->middleware('throttle:6,1')->name('monitoring.run');
+    Route::get('/monitoring/export', [ExportController::class, 'checks'])->name('monitoring.export');
+    Route::post('/monitoring/incidents/{incident}/resolve', [MonitoringController::class, 'resolve'])->middleware('can:write')->name('monitoring.resolve');
 
     Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');
     Route::get('/activity/export', [ExportController::class, 'activity'])->name('activity.export');

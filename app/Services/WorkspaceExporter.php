@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Application;
 use App\Models\ArenaConnection;
 use App\Models\DatabaseConnection;
+use App\Models\Incident;
 use App\Models\Infrastructure;
 use App\Models\Project;
 use App\Models\Repository;
@@ -32,6 +33,11 @@ class WorkspaceExporter
             'databases' => DatabaseConnection::all()->toArray(),
             'infrastructure' => Infrastructure::all()->toArray(),
             'projects' => Project::with(['owner:id,name', 'tasks'])->get()->toArray(),
+            'monitoring' => [
+                'retention_days' => (int) config('nai.monitoring.retention_days', 30),
+                'open_incidents' => Incident::open()->orderByDesc('started_at')->get()->makeHidden(['resolved_by', 'resolution_note'])->toArray(),
+                'recent_resolved_incidents' => Incident::where('status', 'resolved')->latest('resolved_at')->limit(50)->get()->makeHidden(['resolved_by', 'resolution_note'])->toArray(),
+            ],
         ];
     }
 }
