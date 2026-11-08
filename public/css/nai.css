@@ -220,6 +220,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .kv:last-child{border-bottom:0}
 .kv dt{color:var(--faint)}
 .kv dd{margin:0;word-break:break-word}
+.search-modal[hidden]{display:none}
 .search-modal{position:fixed;inset:0;background:rgba(2,6,23,.7);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:12vh 20px}
 .search-panel{width:100%;max-width:640px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
 .search-input-row{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border);color:var(--faint)}
