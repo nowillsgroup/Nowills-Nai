@@ -1,0 +1,68 @@
+name: NAi CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php }} tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, openssl, pdo, pdo_sqlite, pdo_mysql, xml, xmlwriter, curl, zip, ctype, fileinfo, tokenizer, dom
+          coverage: none
+          tools: composer:v2
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Lint
+        run: composer lint
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Tests
+        run: vendor/bin/phpunit
+
+  mysql:
+    name: MySQL schema validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, openssl, pdo, pdo_mysql, xml, xmlwriter, curl, zip, ctype, fileinfo, tokenizer, dom
+          coverage: none
+          tools: composer:v2
+      - name: Install MySQL server (no Docker)
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
+          sudo systemctl start mysql
+          sudo mysql -e "CREATE DATABASE nai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+          sudo mysql -e "CREATE USER 'nai'@'localhost' IDENTIFIED BY 'nai-ci-password'; GRANT ALL PRIVILEGES ON nai.* TO 'nai'@'localhost'; FLUSH PRIVILEGES;"
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Configure MySQL environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          sed -i 's/DB_DATABASE=nai/DB_DATABASE=nai/' .env
+          sed -i 's/DB_USERNAME=nai/DB_USERNAME=nai/' .env
+          sed -i 's/DB_PASSWORD=/DB_PASSWORD=nai-ci-password/' .env
+      - name: Validate migrations on MySQL
+        run: |
+          php artisan migrate --force
+          php artisan migrate:fresh --force
+          php artisan nai:check
