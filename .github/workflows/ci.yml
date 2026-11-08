@@ -107,7 +107,7 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8088/install.php >/dev/null && break; sleep 1; done
       - name: Install through the browser form and sign in
         run: |
-          python3 - <<'PY'
+          python3 - <<'PY' > /tmp/nai-installer-test.out 2>&1
           import re, urllib.request, urllib.parse, urllib.error, http.cookiejar, pathlib, sys
           base='http://127.0.0.1:8088'
           root=pathlib.Path('/tmp/nai-cpanel-live')
@@ -140,6 +140,9 @@ jobs:
           assert opener.open(base+'/notifications', timeout=30).getcode()==200
           print('Direct cPanel browser installation, cleanup, health check, login, arena, and notifications verified.')
           PY
+          status=$?
+          cat /tmp/nai-installer-test.out
+          if [ "$status" -ne 0 ]; then echo "::error::$(tail -c 3500 /tmp/nai-installer-test.out)"; exit "$status"; fi
       - name: Verify database and show server log on failure
         if: always()
         run: |
