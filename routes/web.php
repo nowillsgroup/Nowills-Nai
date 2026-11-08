@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/activity/export', [ExportController::class, 'activity'])->name('activity.export');
 
     Route::get('/arena', [ArenaController::class, 'index'])->name('arena.index');
+    Route::get('/arena/start/{type}/{id}', [ArenaController::class, 'start'])->whereIn('type', ['applications', 'repositories', 'databases', 'infrastructure', 'projects'])->name('arena.start');
+    Route::post('/arena/messages/{message}/task', [ArenaController::class, 'createTask'])->middleware('can:write')->name('arena.task');
     Route::post('/arena/conversations', [ArenaController::class, 'store'])->middleware('can:write')->name('arena.store');
     Route::get('/arena/conversations/{conversation}', [ArenaController::class, 'show'])->name('arena.show');
     Route::post('/arena/conversations/{conversation}/messages', [ArenaController::class, 'message'])->middleware('can:write')->middleware('throttle:30,1')->name('arena.message');

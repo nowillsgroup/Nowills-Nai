@@ -95,12 +95,19 @@ class ArenaGateway
             $history[] = ['role' => 'user', 'content' => $prompt];
         }
 
+        $context = $this->context->snapshot();
+        if ($conversation->subject_type && $conversation->subject_id) {
+            $subject = $this->context->forSubject($conversation->subject_type, (int) $conversation->subject_id);
+            if ($subject) $context['subject'] = $subject;
+        }
+        if ($conversation->playbook) $context['playbook'] = $conversation->playbook;
+
         $payload = [
             'workspace' => $s['workspace_ref'] ?: config('nai.workspace'),
             'conversation_id' => 'nai-'.$conversation->id,
             'session_id' => $conversation->arena_session_id,
             'messages' => $history,
-            'context' => $this->context->snapshot(),
+            'context' => $context,
             'stream' => false,
         ];
 

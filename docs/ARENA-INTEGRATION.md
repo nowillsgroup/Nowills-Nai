@@ -68,6 +68,75 @@ Any `2xx` response marks the connection as connected. Non-2xx/network failures m
 
 The context is a compact, read-only operational snapshot. It is not a training payload and does not include credentials.
 
+## Scoped conversations and playbooks
+
+Conversations can be scoped to a single record: an application, repository, database,
+infrastructure resource, or project. Open one from the record's **Ask Arena AI**
+button (`/arena/start/{type}/{id}`).
+
+When a conversation is scoped, the payload gains `context.subject` and (when a
+playbook was used) `context.playbook`:
+
+```json
+{
+  "context": {
+    "platform": "NAi (Nowills AI)",
+    "playbook": "incident-triage",
+    "subject": {
+      "type": "applications",
+      "label": "Application",
+      "id": 3,
+      "name": "Inventory Sync",
+      "attributes": { "status": "degraded", "environment": "production", "tech_stack": ["PHP", "MySQL"] },
+      "linked": { "repository": {}, "databases": [], "infrastructure": [] },
+      "monitoring": {
+        "recent_checks": [{ "status": "degraded", "http_code": 503, "latency_ms": 812, "source": "probe" }],
+        "open_incidents": [{ "title": "Inventory Sync is degraded", "severity": "major", "check_count": 6 }]
+      }
+    }
+  }
+}
+```
+
+Subject context rules:
+
+- Metadata only — NAi stores no credentials, so none can be forwarded.
+- `monitoring` is present only for applications, databases, and infrastructure, and
+  carries the last 10 checks plus open incidents. Each row keeps its `source`, so
+  Arena can distinguish real probes from labelled demo samples.
+- Projects carry up to 40 tasks and a progress percentage instead of `monitoring`.
+- Linked records are names/statuses only, never nested secrets or full dumps.
+
+### Playbooks
+
+`App\Support\Playbooks` holds prompt **scaffolds** — instructions addressed to Arena
+AI, never answers or answer templates. Available playbooks:
+
+| Subject | Playbooks |
+|---|---|
+| Applications | Health review, Incident triage, Deployment plan, Draft runbook, Security review |
+| Repositories | Review strategy, Release checklist, Dependency audit |
+| Databases | Resilience review, Migration plan, Capacity review |
+| Infrastructure | Hardening plan, Capacity review, Cost review |
+| Projects | Delivery plan, Task breakdown, Risk review |
+
+Selecting a playbook renders its prompt with the record's name and sends it as a
+normal user message. If Arena is unconfigured the message fails honestly like any
+other prompt; the playbook never produces local output.
+
+## From reply to tracked work
+
+A completed Arena AI reply can be saved as a project task (**Save reply as a task**).
+The task keeps `source_message_id`, so the board links back to the conversation and
+shows a "From Arena" chip.
+
+Guards:
+
+- Only `role=assistant`, `status=complete`, non-empty replies qualify — a failed
+  request can never become a task (`422` if attempted directly).
+- Write role required; only the conversation owner may convert its replies.
+- One task per reply; repeat attempts are rejected instead of duplicating work.
+
 ## Supported response shapes
 
 NAi accepts the first non-empty string found at:

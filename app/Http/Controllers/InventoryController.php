@@ -58,7 +58,15 @@ class InventoryController extends Controller
         if (method_exists($item, 'owner')) $item->load('owner');
         if (method_exists($item, 'application')) $item->load('application');
         if (method_exists($item, 'repository')) $item->load(['repository', 'databases', 'infrastructure']);
-        return view('inventory.show', compact('type', 'cfg', 'item'));
+
+        $checks = collect();
+        $incidents = collect();
+        if (in_array($type, \App\Support\Resources::MONITORED, true)) {
+            $checks = \App\Models\ResourceCheck::for($type, $item->id)->latest('checked_at')->limit(12)->get();
+            $incidents = \App\Models\Incident::open()->forResource($type, $item->id)->latest('started_at')->get();
+        }
+
+        return view('inventory.show', compact('type', 'cfg', 'item', 'checks', 'incidents'));
     }
 
     public function edit(string $type, int $id)

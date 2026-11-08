@@ -31,6 +31,9 @@ NAi sits **on top of Arena AI**. It provides branding, workspace management, ope
 - `App\Services\WorkspaceContext` — compact operational context for Arena prompts.
 - `App\Support\Inventory` — inventory type definitions and validation.
 - `App\Support\Audit` — activity log helper.
+- `App\Support\Subjects` — records an Arena conversation can be scoped to.
+- `App\Support\Playbooks` — prompt scaffolds sent to Arena AI (never local answers).
+- `App\Services\WorkspaceContext` — workspace snapshot plus per-subject context (metadata, links, checks, incidents, tasks).
 - `App\Services\ResourceMonitor` — endpoint health probes, check history, incident transitions, retention pruning.
 - `App\Services\MonitoringStats` — bounded read-side aggregations (uptime, latency, sparklines) for the monitoring board.
 - `App\Services\WorkspaceExporter` — secret-free operational backup.

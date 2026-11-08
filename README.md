@@ -25,6 +25,8 @@
 - **Infrastructure & hosting** — servers, hosting platforms, CDN, storage, network resources, regions, and SSL expiry.
 - **Projects & tasks** — project keys, priorities, owners, due dates, and a Kanban task board.
 - **Arena AI workspace** — conversations that forward prompts and compact workspace context to Arena AI.
+- **Scoped orchestration** — open Arena straight from any application, repository, database, infrastructure resource, or project, with playbooks (incident triage, runbook, deployment plan, delivery plan…) and that record's live context attached.
+- **Reply → tracked work** — convert a genuine Arena AI reply into a project task linked back to the conversation; failed requests can never become tasks.
 - **Global search** — `Ctrl/⌘ + K` across applications, repositories, databases, infrastructure, and projects.
 - **Team & roles** — admin, operator, viewer; role-based access control.
 - **Audit trail** — inventory changes, project/task changes, auth events, settings changes, and Arena interactions.
@@ -141,7 +143,7 @@ php artisan nai:monitor          # probe endpoints, record history, update incid
 php artisan nai:monitor-prune    # prune check history beyond the retention window
 php artisan nai:monitor --dry-run # probe without writing status changes
 php artisan nai:export           # secret-free JSON workspace backup
-php artisan nai:lint             # syntax-check app, config, routes, database, and test files
+php artisan nai:lint             # syntax-check PHP files and compile every Blade template
 php artisan migrate --force      # apply schema changes
 php artisan optimize             # cache config/routes/views for production
 ```
