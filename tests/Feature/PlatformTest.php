@@ -61,12 +61,12 @@ class PlatformTest extends TestCase
     public function test_arena_gateway_forwards_to_upstream_engine(): void
     {
         config(['nai.arena.base_url' => 'https://arena.example.test', 'nai.arena.api_key' => 'secret', 'nai.arena.chat_path' => '/v1/chat']);
-        Http::fake(['arena.example.test/*' => Http::response(['reply' => 'Upstream Arena response', 'request_id' => 'req-123', 'usage' => ['total_tokens' => 42]])]);
+        Http::fake(['arena.example.test/*' => Http::response(['reply' => 'Upstream NAi response', 'request_id' => 'req-123', 'usage' => ['total_tokens' => 42]])]);
         $user = $this->admin();
         $conversation = Conversation::create(['user_id' => $user->id, 'title' => 'Test']);
         Message::create(['conversation_id' => $conversation->id, 'role' => 'user', 'content' => 'Review the estate', 'status' => 'complete']);
         $reply = app(ArenaGateway::class)->chat($conversation, 'Review the estate');
-        $this->assertSame('Upstream Arena response', $reply['content']);
+        $this->assertSame('Upstream NAi response', $reply['content']);
         $this->assertSame('req-123', $reply['request_id']);
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'arena.example.test/v1/chat')

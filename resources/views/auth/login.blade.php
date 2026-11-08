@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Sign in to NAi — the Nowills Group command center for applications, databases, repositories, infrastructure, and development projects, orchestrated through Arena AI.">
+    <meta name="description" content="Sign in to NAi — the Nowills Group command center for applications, databases, repositories, infrastructure, and development projects, orchestrated through NAi.">
     <meta name="theme-color" content="#05070f">
     <title>Sign in · NAi</title>
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
@@ -26,7 +26,7 @@
         <span class="login-eyebrow"><span class="pulse"></span>AI orchestration layer</span>
 
         <h1>Your entire technical estate, <span class="gradient-text">in one command center.</span></h1>
-        <p class="lede">NAi unifies applications, repositories, databases, hosting, and delivery projects — then lets you direct development work through Arena AI with full operational context.</p>
+        <p class="lede">NAi unifies applications, repositories, databases, hosting, and delivery projects — then lets you direct development work with full operational context.</p>
 
         <div class="login-pillars">
             <div class="login-pillar">
@@ -35,19 +35,12 @@
             </div>
             <div class="login-pillar">
                 <span class="login-pillar-icon"><x-icon name="sparkles" :size="18" /></span>
-                <div><strong>Scoped AI orchestration</strong><span>Open Arena AI on any record with its metrics attached, and turn replies into tracked tasks.</span></div>
+                <div><strong>Scoped AI orchestration</strong><span>Open NAi on any record with its metrics attached, and turn replies into tracked tasks.</span></div>
             </div>
             <div class="login-pillar">
                 <span class="login-pillar-icon"><x-icon name="shield" :size="18" /></span>
                 <div><strong>Governed by design</strong><span>Role-based access, encrypted credentials, and an audit trail on every change.</span></div>
             </div>
-        </div>
-
-        <div class="login-architecture">
-            <span class="login-arch-node"><x-icon name="dashboard" :size="15" />NAi interface</span>
-            <span class="login-arch-arrow"><x-icon name="arrow-right" :size="15" /></span>
-            <span class="login-arch-node"><x-icon name="cpu" :size="15" />Arena AI engine</span>
-            <p>NAi is the interface and orchestration layer. All AI development capability is provided by Arena AI — NAi runs no model of its own.</p>
         </div>
     </section>
 
@@ -114,7 +107,7 @@
                 <span><x-icon name="activity" :size="12" />Audited access</span>
             </div>
 
-            <p class="login-foot">NAi is an intelligent interface and orchestration layer.<br>AI development is powered by <strong>Arena AI</strong>.</p>
+            <p class="login-foot">NAi is an intelligent interface and orchestration layer.<br>AI development is powered by <strong>Nowills Group</strong>.</p>
         </div>
     </section>
 </div>

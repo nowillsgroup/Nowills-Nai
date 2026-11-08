@@ -2,7 +2,7 @@
 
 **NAi** is a premium enterprise software platform for **Nowills Group**: a centralized, branded interface and management dashboard for applications, databases, repositories, development projects, hosting environments, and technical infrastructure.
 
-> **Architectural boundary:** NAi is **not** an independent AI model. It is an intelligent interface and orchestration layer that connects to **Arena AI** as the underlying AI development engine. NAi contains no local model, no inference fallback, and no simulated AI responses.
+> **Architectural boundary:** NAi is **not** an independent AI model. It is an intelligent interface and orchestration layer that connects to **NAi** as the underlying AI development engine. NAi contains no local model, no inference fallback, and no simulated AI responses.
 
 ## Stack
 
@@ -11,7 +11,7 @@
 | Backend | PHP 8.2+ / Laravel 12 |
 | Database | MySQL 8 / MariaDB 10.6+ (`pdo_mysql`) |
 | Frontend | Server-rendered Blade, plain CSS, vanilla JavaScript |
-| AI engine | Arena AI via configurable upstream HTTP gateway |
+| AI engine | NAi via configurable upstream HTTP gateway |
 | Build tooling | Composer only — **no Node, no npm, no Docker** |
 
 ## Features
@@ -24,17 +24,19 @@
 - **Database inventory** — engine, host, environment, size, backup posture; credentials are never stored.
 - **Infrastructure & hosting** — servers, hosting platforms, CDN, storage, network resources, regions, and SSL expiry.
 - **Projects & tasks** — project keys, priorities, owners, due dates, and a Kanban task board.
-- **Arena AI workspace** — conversations that forward prompts and compact workspace context to Arena AI.
-- **Scoped orchestration** — open Arena straight from any application, repository, database, infrastructure resource, or project, with playbooks (incident triage, runbook, deployment plan, delivery plan…) and that record's live context attached.
-- **Reply → tracked work** — convert a genuine Arena AI reply into a project task linked back to the conversation; failed requests can never become tasks.
+- **NAi workspace** — conversations that forward prompts and compact workspace context to NAi.
+- **Scoped orchestration** — open NAi straight from any application, repository, database, infrastructure resource, or project, with playbooks (incident triage, runbook, deployment plan, delivery plan…) and that record's live context attached.
+- **Reply → tracked work** — convert a genuine NAi reply into a project task linked back to the conversation; failed requests can never become tasks.
 - **Global search** — `Ctrl/⌘ + K` across applications, repositories, databases, infrastructure, and projects.
 - **Team & roles** — admin, operator, viewer; role-based access control.
-- **Audit trail** — inventory changes, project/task changes, auth events, settings changes, and Arena interactions.
+- **Audit trail** — inventory changes, project/task changes, auth events, settings changes, and NAi interactions.
+- **In-app notifications** — topbar bell with unread badge plus a notifications inbox; incident open/recovery alerts go to admins and operators, task assignments notify the assignee, and completions notify the project owner. Per-user read state, mark-all-read, and retention pruning alongside monitoring history.
+- **Arena AI launcher** — a prominent "Arena AI" button (topbar, sidebar, and engine page) opens the real Arena AI website in a new tab, where users sign in to Arena AI directly. NAi remains the branded workspace; it never handles Arena AI credentials. Admins can set the target URL in Settings (defaults to `https://arena.ai`, http(s)-only).
 - **Exports & backup** — CSV exports for inventory, activity, and monitoring history, plus a versioned, secret-free JSON workspace backup.
 - **Safe workspace import** — admin-only upload → validation → change plan → explicit confirmation; additive merge with ID remapping, conflict blocking, transactional apply, and no imported credentials, users, conversations, or historical health.
 - **Security headers** — CSP, nosniff, referrer policy, permissions policy; secure-cookie support for production.
 - **Sign-in experience** — animated neural-mesh brand canvas (reduced-motion aware), password reveal, Caps Lock detection, double-submit protection, per-account cooldowns with actionable messages, and a demo entry that only appears in demo mode.
-- **Settings** — workspace profile and encrypted Arena AI connection configuration.
+- **Settings** — workspace profile and encrypted NAi connection configuration.
 
 ## Requirements
 
@@ -44,6 +46,29 @@
 - A web server (Nginx/Apache + PHP-FPM) for production, or `php artisan serve` for local evaluation
 
 No Node.js, npm, Vite, Docker, or container runtime is required.
+
+## Direct install on Hostinger (VPS or cPanel)
+
+The fastest path from Git to a running site. Full walkthrough: [`docs/HOSTINGER.md`](docs/HOSTINGER.md).
+
+**Hostinger VPS (SSH):**
+
+```bash
+git clone https://github.com/nowillsgroup/Nowills-Nai.git nai
+cd nai
+bash install.sh
+```
+
+`install.sh` checks PHP/extensions, installs Composer deps, writes `.env`, generates
+the key, migrates, optionally creates an admin, and caches for production. It is
+safe to re-run for updates (`git pull && bash install.sh`).
+
+**Hostinger cPanel (Git™ Version Control):** clone the repo to `/home/USER/nai`,
+create `.env`, then **Deploy HEAD Commit** — `.cpanel.yml` runs `deploy/cpanel.sh`
+to build in place. Point the domain's document root at `/home/USER/nai/public`.
+
+> **Critical:** the web document root must be the app's `public/` directory, never
+> the repository root.
 
 ## Quick start (MySQL)
 
@@ -97,9 +122,9 @@ The login page exposes **Open demo workspace**. Demo credentials (demo only): `d
 
 > Disable `NAI_DEMO_MODE` and never run the demo seeder in production. The evaluation preview may use SQLite for convenience, but the production target and default `.env.example` are MySQL.
 
-## Connect Arena AI
+## Connect NAi
 
-NAi does not guess or fabricate Arena responses. Configure the approved Arena AI endpoint for your deployment:
+NAi does not guess or fabricate responses. Configure the approved NAi endpoint for your deployment:
 
 ```dotenv
 ARENA_BASE_URL=https://your-arena-endpoint.example.com
@@ -110,7 +135,7 @@ ARENA_HEALTH_PATH=/v1/health
 ARENA_TIMEOUT=45
 ```
 
-Or configure it in **Settings → Arena AI connection** (admin only). API keys are encrypted at rest.
+Or configure it in **Settings → NAi connection** (admin only). API keys are encrypted at rest.
 
 ```bash
 php artisan arena:test
@@ -122,8 +147,8 @@ See [`docs/ARENA-INTEGRATION.md`](docs/ARENA-INTEGRATION.md) for the request/res
 
 | Role | Permissions |
 |---|---|
-| Admin | Full access, settings, Arena configuration, team management |
-| Operator | Manage inventory, projects, tasks, and Arena conversations |
+| Admin | Full access, settings, NAi configuration, team management |
+| Operator | Manage inventory, projects, tasks, and NAi conversations |
 | Viewer | Read-only access to workspace data |
 
 ## Testing
@@ -133,14 +158,14 @@ composer install
 php vendor/bin/phpunit
 ```
 
-Feature tests cover the inventory, projects, Arena adapter boundary, roles, exports, safe workspace import, and the monitoring/incident lifecycle. Tests use an in-memory SQLite database by default (`phpunit.xml`). Production runtime remains MySQL. GitHub Actions (`.github/workflows/ci.yml`) runs the suite on PHP 8.2–8.4 and validates migrations against a real MySQL server without Docker.
+Feature tests cover the inventory, projects, NAi adapter boundary, roles, exports, safe workspace import, and the monitoring/incident lifecycle. Tests use an in-memory SQLite database by default (`phpunit.xml`). Production runtime remains MySQL. GitHub Actions (`.github/workflows/ci.yml`) runs the suite on PHP 8.2–8.4 and validates migrations against a real MySQL server without Docker.
 
 ## Useful commands
 
 ```bash
 php artisan nai:create-admin     # create initial administrator
-php artisan nai:check            # verify runtime, database, Arena configuration
-php artisan arena:test           # test upstream Arena AI health endpoint
+php artisan nai:check            # verify runtime, database, NAi configuration
+php artisan arena:test           # test upstream NAi health endpoint
 php artisan nai:monitor          # probe endpoints, record history, update incidents
 php artisan nai:monitor-prune    # prune check history beyond the retention window
 php artisan nai:monitor --dry-run # probe without writing status changes
@@ -172,17 +197,18 @@ Serve the `public/` directory through Nginx/Apache + PHP-FPM. Keep `.env`, `stor
 | Document | Contents |
 |---|---|
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Layer boundaries, services, data model |
-| [`docs/ARENA-INTEGRATION.md`](docs/ARENA-INTEGRATION.md) | Arena AI adapter contract and configuration states |
+| [`docs/ARENA-INTEGRATION.md`](docs/ARENA-INTEGRATION.md) | NAi adapter contract and configuration states |
 | [`docs/MONITORING.md`](docs/MONITORING.md) | Probe semantics, uptime math, incident lifecycle, retention |
 | [`docs/RESTORE.md`](docs/RESTORE.md) | Versioned exports, additive import workflow, safety boundaries, limits |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | MySQL setup, web server, scheduler, operations |
+| [`docs/HOSTINGER.md`](docs/HOSTINGER.md) | Direct-from-Git install on Hostinger VPS (`install.sh`) and cPanel (`.cpanel.yml`) |
 
 ## Architecture
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ```text
-Users → NAi (Laravel interface + orchestration) → Arena AI (development engine)
+Users → NAi (Laravel interface + orchestration) → NAi (development engine)
              ↓
            MySQL (workspace inventory, projects, conversations, audit)
 ```
@@ -191,9 +217,9 @@ Users → NAi (Laravel interface + orchestration) → Arena AI (development engi
 
 - CSRF protection on all state-changing forms.
 - Role-based authorization middleware and gates.
-- Arena API keys encrypted with Laravel `APP_KEY`.
+- NAi API keys encrypted with Laravel `APP_KEY`.
 - Inventory stores metadata only; do not enter secrets in notes fields.
-- Login throttling (route-level plus a per-account/per-IP limiter), failed-attempt auditing, and Arena prompt throttling.
+- Login throttling (route-level plus a per-account/per-IP limiter), failed-attempt auditing, and NAi prompt throttling.
 - Sign-in errors are identical for unknown accounts and wrong passwords; passwords are never reflected back.
 - Security headers and production secure-cookie support.
 - All significant actions are written to the activity log.

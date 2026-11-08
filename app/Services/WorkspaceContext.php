@@ -14,7 +14,7 @@ use App\Support\Subjects;
 
 class WorkspaceContext
 {
-    /** Compact, read-only operational context sent to Arena AI with a request. */
+    /** Compact, read-only operational context sent to NAi with a request. */
     public function snapshot(): array
     {
         return [

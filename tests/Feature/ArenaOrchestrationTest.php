@@ -60,10 +60,10 @@ class ArenaOrchestrationTest extends TestCase
         $this->assertStringContainsString('Customer Portal', $conversation->messages()->where('role', 'user')->value('content'));
         $this->assertStringContainsString('Incident triage', $conversation->title);
 
-        // Arena is unconfigured: the failure must be recorded, never answered locally.
+        // NAi is unconfigured: the failure must be recorded, never answered locally.
         $assistant = $conversation->messages()->where('role', 'assistant')->first();
         $this->assertSame('failed', $assistant->status);
-        $this->assertSame('Arena AI did not return a response.', $assistant->content);
+        $this->assertSame('NAi did not return a response.', $assistant->content);
         $this->assertFalse($assistant->isActionable());
         $this->assertDatabaseHas('activities', ['action' => 'arena.scoped']);
         $this->assertStringContainsString('/arena/conversations/'.$conversation->id, $response->headers->get('Location'));
@@ -123,7 +123,7 @@ class ArenaOrchestrationTest extends TestCase
         $user = $this->user();
         $project = $this->project();
         $conversation = Conversation::create(['user_id' => $user->id, 'title' => 'Chat', 'last_message_at' => now()]);
-        $failed = Message::create(['conversation_id' => $conversation->id, 'role' => 'assistant', 'content' => 'Arena AI did not return a response.', 'status' => 'failed']);
+        $failed = Message::create(['conversation_id' => $conversation->id, 'role' => 'assistant', 'content' => 'NAi did not return a response.', 'status' => 'failed']);
         $own = Message::create(['conversation_id' => $conversation->id, 'role' => 'user', 'content' => 'My prompt', 'status' => 'complete']);
 
         foreach ([$failed, $own] as $message) {

@@ -16,8 +16,8 @@
 <div class="kv"><dt>Last checked</dt><dd>{{ $item->last_checked_at?->diffForHumans() ?? 'Never' }}</dd></div>
 @endif
 <div class="notice mt-16"><x-icon name="shield" :size="16" /><span>NAi stores operational metadata only. Credentials and secrets belong in your approved secret manager, not in inventory notes.</span></div>
-<a href="{{ route('arena.start',['type'=>$type,'id'=>$item->id]) }}" class="btn btn-primary btn-block mt-16"><x-icon name="sparkles" :size="16" />Ask Arena AI about this {{ strtolower($cfg['singular']) }}</a>
-<p class="faint" style="font-size:11px;margin:8px 0 0;text-align:center">Opens a scoped conversation with playbooks. Arena AI generates all responses.</p>
+<a href="{{ route('arena.start',['type'=>$type,'id'=>$item->id]) }}" class="btn btn-primary btn-block mt-16"><x-icon name="sparkles" :size="16" />Ask NAi about this {{ strtolower($cfg['singular']) }}</a>
+<p class="faint" style="font-size:11px;margin:8px 0 0;text-align:center">Opens a scoped conversation with playbooks. NAi generates all responses.</p>
 </div>
 </div>
 @if(in_array($type, \App\Support\Resources::MONITORED, true))

@@ -27,7 +27,7 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Configure `.env` for MySQL, set `APP_ENV=production`, `APP_DEBUG=false`, `NAI_DEMO_MODE=false`, `SESSION_SECURE_COOKIE=true`, and your Arena AI endpoint. Enable scheduled monitoring with `NAI_MONITORING_ENABLED=true` if appropriate.
+Configure `.env` for MySQL, set `APP_ENV=production`, `APP_DEBUG=false`, `NAI_DEMO_MODE=false`, `SESSION_SECURE_COOKIE=true`, and your NAi endpoint. Enable scheduled monitoring with `NAI_MONITORING_ENABLED=true` if appropriate.
 
 ```bash
 php artisan migrate --force
@@ -72,7 +72,7 @@ server {
 
 Enable TLS with your certificate manager. Set `APP_URL=https://nai.nowills.group`.
 
-## 5. Arena AI
+## 5. NAi
 
 Configure `ARENA_BASE_URL` and `ARENA_API_KEY`, then:
 
@@ -102,7 +102,7 @@ See [MONITORING.md](MONITORING.md) for probe semantics, incident lifecycle, and 
 ## 7. Operations
 
 - Back up MySQL regularly and test restores.
-- Rotate `APP_KEY` only with a planned re-encryption process for stored Arena keys.
+- Rotate `APP_KEY` only with a planned re-encryption process for stored NAi keys.
 - Keep `NAI_DEMO_MODE=false`.
 - Monitor `storage/logs/laravel.log`.
 - If you switch `QUEUE_CONNECTION` from `sync` to `database`, run a queue worker under systemd/supervisor.

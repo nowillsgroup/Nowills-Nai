@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class CheckPlatform extends Command
 {
     protected $signature = 'nai:check';
-    protected $description = 'Verify runtime, database, and Arena AI configuration';
+    protected $description = 'Verify runtime, database, and NAi configuration';
 
     public function handle(): int
     {
@@ -22,7 +22,7 @@ class CheckPlatform extends Command
         $ok = $ok && $mysql;
         try { DB::connection()->getPdo(); $this->line('✓ Database connection: '.DB::connection()->getDriverName()); }
         catch (\Throwable $e) { $this->error('✗ Database connection failed.'); $ok = false; }
-        $this->line((config('nai.arena.base_url') ? '✓' : '○').' Arena AI endpoint '.(config('nai.arena.base_url') ? 'configured' : 'not configured (interface-only mode)'));
+        $this->line((config('nai.arena.base_url') ? '✓' : '○').' NAi endpoint '.(config('nai.arena.base_url') ? 'configured' : 'not configured (interface-only mode)'));
         $this->line((config('nai.demo_mode') ? '!' : '✓').' Demo mode '.(config('nai.demo_mode') ? 'enabled — disable in production' : 'disabled'));
         return $ok ? self::SUCCESS : self::FAILURE;
     }

@@ -13,7 +13,7 @@ class Message extends Model
     public function conversation(): BelongsTo { return $this->belongsTo(Conversation::class); }
     public function task(): HasOne { return $this->hasOne(Task::class, 'source_message_id'); }
 
-    /** Only genuine, completed Arena AI replies can be converted into work. */
+    /** Only genuine, completed NAi replies can be converted into work. */
     public function isActionable(): bool
     {
         return $this->role === 'assistant' && $this->status === 'complete' && trim($this->content) !== '';

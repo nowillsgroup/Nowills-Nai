@@ -8,9 +8,9 @@ $donut = $offset ? 'conic-gradient('.implode(',', $gradientParts).')' : 'conic-g
 <div class="hero-card">
     <div>
         <h2>Welcome back, <span class="gradient-text">{{ $first }}</span></h2>
-        <p>Your entire technical estate in one command center. Monitor applications, coordinate projects, and orchestrate development through Arena AI.</p>
+        <p>Your entire technical estate in one command center. Monitor applications, coordinate projects, and orchestrate development through NAi.</p>
         <div class="flex gap-8 mt-16">
-            <a href="{{ route('arena.index') }}" class="btn btn-primary"><x-icon name="sparkles" :size="16" />Open Arena AI</a>
+            <a href="{{ route('arena.index') }}" class="btn btn-primary"><x-icon name="sparkles" :size="16" />Open NAi</a>
             @can('write')<a href="{{ route('inventory.create','applications') }}" class="btn"><x-icon name="plus" :size="16" />Add application</a><form method="POST" action="{{ route('monitoring.run') }}">@csrf<button class="btn" title="Probe registered endpoints"><x-icon name="refresh" :size="16" />Run checks</button></form>@endcan
         </div>
     </div>
@@ -86,13 +86,13 @@ $donut = $offset ? 'conic-gradient('.implode(',', $gradientParts).')' : 'conic-g
 
     <div class="grid" style="gap:18px">
         <div class="card">
-            <div class="card-head"><h3>Arena AI engine</h3><x-badge :status="$arenaStatus" /></div>
-            <div class="flex gap-12 items-center" style="margin-bottom:14px"><div class="engine-icon" style="width:42px;height:42px"><x-icon name="sparkles" :size="22" /></div><div><strong style="font-size:13px">Orchestration layer</strong><div class="faint" style="font-size:11.5px">NAi connects to Arena AI for development intelligence.</div></div></div>
+            <div class="card-head"><h3>NAi engine</h3><x-badge :status="$arenaStatus" /></div>
+            <div class="flex gap-12 items-center" style="margin-bottom:14px"><div class="engine-icon" style="width:42px;height:42px"><x-icon name="sparkles" :size="22" /></div><div><strong style="font-size:13px">Orchestration layer</strong><div class="faint" style="font-size:11.5px">NAi connects to NAi for development intelligence.</div></div></div>
             @if(!$arenaConfigured)
-            <div class="notice warn" style="margin-bottom:14px"><x-icon name="alert" :size="16" /><span>Arena AI is not connected yet. Configure the upstream endpoint to enable AI-assisted workflows.</span></div>
-            @can('admin')<a href="{{ route('settings.edit') }}" class="btn btn-block"><x-icon name="settings" :size="16" />Connect Arena AI</a>@endcan
+            <div class="notice warn" style="margin-bottom:14px"><x-icon name="alert" :size="16" /><span>NAi is not connected yet. Configure the upstream endpoint to enable AI-assisted workflows.</span></div>
+            @can('admin')<a href="{{ route('settings.edit') }}" class="btn btn-block"><x-icon name="settings" :size="16" />Connect NAi</a>@endcan
             @else
-            <a href="{{ route('arena.index') }}" class="btn btn-primary btn-block"><x-icon name="sparkles" :size="16" />Open Arena workspace</a>
+            <a href="{{ route('arena.index') }}" class="btn btn-primary btn-block"><x-icon name="sparkles" :size="16" />Open NAi workspace</a>
             @endif
         </div>
 

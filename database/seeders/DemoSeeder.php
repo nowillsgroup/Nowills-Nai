@@ -111,5 +111,25 @@ class DemoSeeder extends Seeder
         }
 
         $this->call(MonitoringDemoSeeder::class);
+
+        if (\App\Models\Notification::count() === 0) {
+            $open = \App\Models\Incident::open()->orderByDesc('started_at')->get();
+            foreach ($open as $i => $incident) {
+                \App\Support\Notifier::send($admin, 'incident.opened', $incident->title, ucfirst($incident->severity).' incident opened by a health check.', '/monitoring', $incident);
+            }
+            $resolved = \App\Models\Incident::where('status', 'resolved')->orderByDesc('resolved_at')->first();
+            if ($resolved) {
+                $n = \App\Support\Notifier::send($admin, 'incident.resolved', $resolved->resource_name.' recovered', 'Incident auto-resolved after '.$resolved->durationForHumans().'.', '/monitoring', $resolved);
+                $n->update(['read_at' => now()->subMinutes(30), 'created_at' => now()->subHours(2)]);
+            }
+            $task = Task::where('assignee_id', $admin->id)->where('status', '!=', 'done')->first();
+            if ($task) {
+                $n = \App\Support\Notifier::send($admin, 'task.assigned', 'New task: '.$task->title, 'Ama Mensah assigned you a '.$task->priority.'-priority task in '.$task->project->key.'.', '/projects/'.$task->project_id, $task);
+                $n->update(['created_at' => now()->subHours(4)]);
+            }
+            foreach (\App\Models\Notification::where('type', 'incident.opened')->get() as $i => $n) {
+                $n->update(['created_at' => now()->subMinutes(12 + $i * 25)]);
+            }
+        }
     }
 }

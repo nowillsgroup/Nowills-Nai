@@ -4,9 +4,16 @@ return [
     'workspace' => env('NAI_WORKSPACE_NAME', 'Nowills Group'),
     'demo_mode' => (bool) env('NAI_DEMO_MODE', false),
 
+    // Local preview convenience only: open the workspace without the login step.
+    'preview_auto_demo' => (bool) env('NAI_PREVIEW_AUTO_DEMO', false),
+
+    // Landing page for the local auto-demo preview: "dashboard" or "arena".
+    // This is ignored unless preview_auto_demo, demo_mode, and APP_ENV=local are all enabled.
+    'preview_landing' => env('NAI_PREVIEW_LANDING', 'dashboard'),
+
     /*
     | NAi is an orchestration interface only. These values describe the
-    | upstream Arena AI connection; no model or inference code lives here.
+    | upstream NAi connection; no model or inference code lives here.
     */
     'monitoring' => [
         'enabled' => (bool) env('NAI_MONITORING_ENABLED', false),
@@ -16,6 +23,9 @@ return [
     ],
 
     'arena' => [
+        // Public Arena AI website opened by the NAi launcher (new tab). This is
+        // the human-facing site, separate from the machine API base_url below.
+        'portal_url' => env('ARENA_PORTAL_URL', 'https://arena.ai'),
         'base_url' => env('ARENA_BASE_URL', ''),
         'api_key' => env('ARENA_API_KEY', ''),
         'workspace_ref' => env('ARENA_WORKSPACE_REF', ''),

@@ -6,7 +6,7 @@ use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Records an Arena AI conversation can be scoped to. Scoping only changes the
+ * Records an NAi conversation can be scoped to. Scoping only changes the
  * context NAi sends upstream; it never generates content locally.
  */
 class Subjects

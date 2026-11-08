@@ -31,7 +31,7 @@
         <ul class="import-checklist">
             <li><x-icon name="check" :size="16" /><div><strong>No overwrites. No deletions.</strong><span>Matching records stay untouched. Different metadata blocks the import for review.</span></div></li>
             <li><x-icon name="check" :size="16" /><div><strong>Relationships travel safely.</strong><span>Source IDs are remapped to this workspace, never inserted as destination IDs.</span></div></li>
-            <li><x-icon name="check" :size="16" /><div><strong>No borrowed identities or secrets.</strong><span>Users, credentials, ownership, Arena settings, and AI conversations are excluded.</span></div></li>
+            <li><x-icon name="check" :size="16" /><div><strong>No borrowed identities or secrets.</strong><span>Users, credentials, ownership, NAi settings, and AI conversations are excluded.</span></div></li>
             <li><x-icon name="check" :size="16" /><div><strong>Health must be earned.</strong><span>Imported resources start Unknown. Monitoring history is never restored as live health.</span></div></li>
         </ul>
         <a class="link import-doc-link" href="{{ route('settings.edit') }}">Manage workspace backups<x-icon name="arrow-right" :size="14" /></a>

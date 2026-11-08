@@ -8,6 +8,7 @@ use App\Models\Incident;
 use App\Models\Infrastructure;
 use App\Models\ResourceCheck;
 use App\Support\Audit;
+use App\Support\Notifier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 
@@ -108,6 +109,7 @@ class ResourceMonitor
         $cutoff = now()->subDays($days);
         $deleted = ResourceCheck::where('checked_at', '<', $cutoff)->delete();
         Incident::where('status', 'resolved')->where('resolved_at', '<', $cutoff)->delete();
+        \App\Models\Notification::where('created_at', '<', $cutoff)->delete();
         if ($deleted) Audit::log('monitoring.prune', sprintf('Pruned %d monitoring checks older than %d days', $deleted, $days));
 
         return $deleted;
@@ -157,13 +159,14 @@ class ResourceMonitor
 
                 return $counts;
             }
-            Incident::create([
+            $incident = Incident::create([
                 'resource_type' => $type, 'resource_id' => $resource->id, 'resource_name' => $resource->name,
                 'title' => $resource->name.' is '.$result['status'], 'severity' => $severity, 'status' => 'open',
                 'trigger_status' => $result['status'], 'detail' => isset($result['message']) ? mb_substr((string) $result['message'], 0, 500) : null,
                 'check_count' => 1, 'started_at' => now(), 'last_seen_at' => now(),
             ]);
             Audit::log('monitoring.incident_opened', sprintf('Incident opened: %s (%s)', $resource->name, $result['status']));
+            Notifier::roles(['admin', 'operator'], 'incident.opened', $incident->title, ucfirst($severity).' incident opened by a health check.', route('monitoring.index', [], false), $incident);
             $counts['incidents_opened'] = 1;
 
             return $counts;
@@ -172,6 +175,7 @@ class ResourceMonitor
         if ($open) {
             $open->update(['status' => 'resolved', 'resolved_at' => now(), 'resolution' => 'recovered', 'last_seen_at' => now()]);
             Audit::log('monitoring.incident_resolved', sprintf('Incident auto-resolved: %s recovered after %s', $resource->name, $open->durationForHumans()));
+            Notifier::roles(['admin', 'operator'], 'incident.resolved', $resource->name.' recovered', 'Incident auto-resolved after '.$open->durationForHumans().'.', route('monitoring.index', [], false), $open);
             $counts['incidents_resolved'] = 1;
         }
 

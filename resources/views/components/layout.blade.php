@@ -1,13 +1,15 @@
 @props(['title' => 'Dashboard', 'subtitle' => null])
 @php($engineStatus = $arenaStatus ?? app(\App\Services\ArenaGateway::class)->status())
 @php($navIncidents = \App\Models\Incident::open()->count())
+@php($navUnread = \App\Models\Notification::forUser(auth()->id())->unread()->count())
+@php($navNotifications = \App\Models\Notification::forUser(auth()->id())->latest()->limit(6)->get())
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title }} · NAi</title>
+    <title>{{ $title === 'NAi' ? 'NAi' : $title.' · NAi' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('css/nai.css') }}">
 </head>
@@ -15,7 +17,7 @@
 <div class="app-shell">
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <a href="{{ route('dashboard') }}" class="brand-link"><img src="{{ asset('images/nai-logo.png') }}" alt="NAi" class="brand-logo"></a>
+            <a href="{{ route('dashboard.home') }}" class="brand-link"><img src="{{ asset('images/nai-logo.png') }}" alt="NAi" class="brand-logo"></a>
             <div class="brand-sub">Nowills AI</div>
         </div>
         <div class="workspace-switcher">
@@ -25,8 +27,9 @@
         </div>
         <nav class="sidebar-nav">
             <div class="nav-label">Overview</div>
-            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"><x-icon name="dashboard" :size="18" /><span>Dashboard</span></a>
-            <a href="{{ route('arena.index') }}" class="nav-item {{ request()->routeIs('arena.*') ? 'active' : '' }}"><x-icon name="sparkles" :size="18" /><span>Arena AI</span><span class="nav-pill">Engine</span></a>
+            <a href="{{ route('dashboard.home') }}" class="nav-item {{ request()->routeIs('dashboard*') ? 'active' : '' }}"><x-icon name="dashboard" :size="18" /><span>Dashboard</span></a>
+            <a href="{{ route('arena.index') }}" class="nav-item {{ request()->routeIs('arena.*') ? 'active' : '' }}"><x-icon name="sparkles" :size="18" /><span>NAi</span><span class="nav-pill">Engine</span></a>
+            <a href="{{ \App\Support\ArenaPortal::url() }}" target="_blank" rel="noopener noreferrer" class="nav-item nav-external"><x-icon name="external" :size="18" /><span>Arena AI</span><span class="nav-pill">Open</span></a>
             <div class="nav-label">Manage</div>
             <a href="{{ route('inventory.index','applications') }}" class="nav-item {{ request()->is('inventory/applications*') ? 'active' : '' }}"><x-icon name="apps" :size="18" /><span>Applications</span></a>
             <a href="{{ route('inventory.index','repositories') }}" class="nav-item {{ request()->is('inventory/repositories*') ? 'active' : '' }}"><x-icon name="git" :size="18" /><span>Repositories</span></a>
@@ -35,6 +38,7 @@
             <a href="{{ route('projects.index') }}" class="nav-item {{ request()->routeIs('projects.*') ? 'active' : '' }}"><x-icon name="folder" :size="18" /><span>Projects</span></a>
             <a href="{{ route('monitoring.index') }}" class="nav-item {{ request()->routeIs('monitoring.*') ? 'active' : '' }}"><x-icon name="gauge" :size="18" /><span>Monitoring</span>@if($navIncidents)<span class="nav-pill alert">{{ $navIncidents }}</span>@endif</a>
             <div class="nav-label">System</div>
+            <a href="{{ route('notifications.index') }}" class="nav-item {{ request()->routeIs('notifications.*') ? 'active' : '' }}"><x-icon name="bell" :size="18" /><span>Notifications</span>@if($navUnread)<span class="nav-pill alert">{{ $navUnread }}</span>@endif</a>
             <a href="{{ route('activity.index') }}" class="nav-item {{ request()->routeIs('activity.*') ? 'active' : '' }}"><x-icon name="activity" :size="18" /><span>Activity</span></a>
             @can('admin')
             <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"><x-icon name="users" :size="18" /><span>Team</span></a>
@@ -43,10 +47,10 @@
         </nav>
         <div class="sidebar-engine">
             <div class="engine-icon"><x-icon name="cpu" :size="18" /></div>
-            <div><strong>Arena AI engine</strong><span>{{ $engineStatus }}</span></div>
+            <div><strong>NAi engine</strong><span>{{ $engineStatus }}</span></div>
             <span class="status-light {{ $engineStatus === 'connected' ? 'ok' : '' }}"></span>
         </div>
-        <div class="sidebar-footer">NAi is an orchestration interface.<br>AI development is powered by Arena AI.</div>
+        <div class="sidebar-footer">NAi is an orchestration interface.<br>AI development is powered by NAi.</div>
     </aside>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="main-wrap">
@@ -55,7 +59,20 @@
             <div class="topbar-title"><h1>{{ $title }}</h1>@if($subtitle)<span>{{ $subtitle }}</span>@endif</div>
             <div class="topbar-actions">
                 <button class="search-trigger" id="searchTrigger"><x-icon name="search" :size="16" /><span>Search workspace…</span><kbd>⌘K</kbd></button>
+                <a href="{{ \App\Support\ArenaPortal::url() }}" target="_blank" rel="noopener noreferrer" class="arena-launch" title="Open Arena AI in a new tab"><x-icon name="sparkles" :size="15" /><span>Arena AI</span><x-icon name="external" :size="13" /></a>
                 @if(config('nai.demo_mode'))<span class="demo-chip">Demo</span>@endif
+                <div class="dropdown">
+                    <button class="icon-btn bell-btn" id="bellBtn" aria-label="Notifications ({{ $navUnread }} unread)"><x-icon name="bell" :size="17" />@if($navUnread)<span class="bell-count">{{ min($navUnread, 99) }}</span>@endif</button>
+                    <div class="dropdown-menu bell-menu" id="bellMenu">
+                        <div class="dropdown-header bell-head"><span>Notifications</span>@if($navUnread)<form method="POST" action="{{ route('notifications.readAll') }}">@csrf<button type="submit" class="bell-mark">Mark all read</button></form>@endif</div>
+                        @forelse($navNotifications as $notification)
+                        <form method="POST" action="{{ route('notifications.read', $notification) }}">@csrf<input type="hidden" name="goto" value="1"><button type="submit" class="bell-item {{ $notification->isUnread() ? 'unread' : '' }}"><span class="notif-icon tone-{{ $notification->tone() }}"><x-icon :name="$notification->icon()" :size="14" /></span><span class="bell-item-body"><strong>{{ $notification->title }}</strong><span>{{ $notification->created_at->diffForHumans() }}</span></span>@if($notification->isUnread())<span class="notif-dot"></span>@endif</button></form>
+                        @empty
+                        <div class="bell-empty">No notifications yet.</div>
+                        @endforelse
+                        <a href="{{ route('notifications.index') }}" class="bell-all">View all notifications <x-icon name="arrow-right" :size="13" /></a>
+                    </div>
+                </div>
                 <div class="dropdown">
                     <button class="user-menu" id="userMenuBtn"><span class="avatar">{{ auth()->user()->initials() }}</span><span class="user-meta"><strong>{{ auth()->user()->name }}</strong><span>{{ ucfirst(auth()->user()->role) }}</span></span><x-icon name="chevron-down" :size="16" /></button>
                     <div class="dropdown-menu" id="userMenu">

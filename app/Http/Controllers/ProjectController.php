@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Support\Audit;
+use App\Support\Notifier;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -66,6 +67,9 @@ class ProjectController extends Controller
         $data = $request->validate(['title' => 'required|string|max:200', 'description' => 'nullable|string|max:2000', 'status' => 'required|in:backlog,in_progress,review,done', 'priority' => 'required|in:low,medium,high,urgent', 'assignee_id' => 'nullable|exists:users,id', 'due_date' => 'nullable|date']);
         $task = $project->tasks()->create($data);
         Audit::log('task.created', 'Added task “'.$task->title.'” to '.$project->key, $task);
+        if ($task->assignee_id && $task->assignee_id !== $request->user()->id) {
+            Notifier::send($task->assignee_id, 'task.assigned', 'New task: '.$task->title, $request->user()->name.' assigned you a '.$task->priority.'-priority task in '.$project->key.'.', route('projects.show', $project, false), $task);
+        }
         return back()->with('success', 'Task added.');
     }
 
@@ -75,6 +79,9 @@ class ProjectController extends Controller
         $data = $request->validate(['status' => 'required|in:backlog,in_progress,review,done']);
         $task->update($data);
         Audit::log('task.updated', 'Moved task “'.$task->title.'” to '.str_replace('_', ' ', $data['status']), $task);
+        if ($data['status'] === 'done' && $project->owner_id && $project->owner_id !== $request->user()->id) {
+            Notifier::send($project->owner_id, 'task.completed', 'Task completed: '.$task->title, $request->user()->name.' marked a task done in '.$project->key.'.', route('projects.show', $project, false), $task);
+        }
         return back()->with('success', 'Task updated.');
     }
 

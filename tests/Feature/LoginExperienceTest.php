@@ -28,12 +28,34 @@ class LoginExperienceTest extends TestCase
         $response = $this->get('/login')->assertOk();
         $response->assertSee('Welcome to NAi')
             ->assertSee('Sign in to workspace')
-            ->assertSee('Arena AI')
+            ->assertSee('NAi')
             ->assertSee('autocomplete="username"', false)
             ->assertSee('autocomplete="current-password"', false)
             ->assertSee('name="_token"', false)
             ->assertSee('js/login.js')
-            ->assertSee('loginMesh');
+            ->assertSee('loginMesh')
+            ->assertDontSee('login-architecture')
+            ->assertDontSee('NAi runs no model of its own')
+            ->assertDontSee('development work through NAi')
+            ->assertSee('AI development is powered by <strong>Nowills Group</strong>.', false)
+            ->assertDontSee('AI development is powered by <strong>NAi</strong>.', false);
+    }
+
+    public function test_sign_in_assets_are_same_origin_relative_for_embedded_previews(): void
+    {
+        // The Arena preview panel terminates TLS at a proxy; PHP may only see
+        // an internal HTTP host. Assets must not inherit that internal origin.
+        $response = $this->get('/login')->assertOk();
+        $response->assertSee('href="/css/nai.css"', false)
+            ->assertSee('src="/js/login.js"', false)
+            ->assertSee('src="/images/nai-logo.png"', false)
+            ->assertSee('href="/images/favicon.png"', false);
+
+        $content = $response->getContent();
+        $this->assertDoesNotMatchRegularExpression(
+            '/(?:href|src)="https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/(?:css|js|images|fonts)\//',
+            $content
+        );
     }
 
     public function test_sign_in_page_does_not_leak_workspace_records_or_use_inline_scripts(): void

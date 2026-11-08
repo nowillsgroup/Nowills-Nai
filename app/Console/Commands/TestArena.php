@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 class TestArena extends Command
 {
     protected $signature = 'arena:test';
-    protected $description = 'Check the configured upstream Arena AI connection';
+    protected $description = 'Check the configured upstream NAi connection';
 
     public function handle(ArenaGateway $arena): int
     {

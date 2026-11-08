@@ -8,6 +8,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MonitoringController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
@@ -20,14 +21,26 @@ Route::middleware('guest')->group(function () {
     Route::post('/demo', [AuthController::class, 'demo'])->middleware('throttle:10,1')->name('login.demo');
 });
 
-Route::middleware('auth')->group(function () {
+Route::get('/', DashboardController::class)
+    ->middleware(\App\Http\Middleware\PreviewDemoEntry::class)
+    ->name('dashboard');
+
+Route::middleware([\App\Http\Middleware\PreviewDemoEntry::class, 'auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/', DashboardController::class)->name('dashboard');
+
+    // Explicit dashboard URL so the sidebar can still open the dashboard when
+    // the local preview root is configured to land on NAi.
+    Route::get('/dashboard', DashboardController::class)->name('dashboard.home');
+
     Route::get('/search', SearchController::class)->name('search');
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
     Route::post('/monitoring/run', [MonitoringController::class, 'run'])->middleware('can:write')->middleware('throttle:6,1')->name('monitoring.run');
     Route::get('/monitoring/export', [ExportController::class, 'checks'])->name('monitoring.export');
     Route::post('/monitoring/incidents/{incident}/resolve', [MonitoringController::class, 'resolve'])->middleware('can:write')->name('monitoring.resolve');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.readAll');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 
     Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');
     Route::get('/activity/export', [ExportController::class, 'activity'])->name('activity.export');

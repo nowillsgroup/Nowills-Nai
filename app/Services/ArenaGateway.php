@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * Boundary to the upstream Arena AI development engine.
+ * Boundary to the upstream NAi development engine.
  *
  * NAi deliberately contains no model, prompt-completion engine, or local
- * inference fallback. Configure this gateway with the approved Arena AI
- * endpoint/bridge for your Arena deployment. The default request/response
+ * inference fallback. Configure this gateway with the approved NAi
+ * endpoint/bridge for your NAi deployment. The default request/response
  * contract is documented in docs/ARENA-INTEGRATION.md.
  */
 class ArenaGateway
@@ -61,19 +61,19 @@ class ArenaGateway
         $c = ArenaConnection::query()->firstOrCreate([], ['chat_path' => '/v1/chat', 'health_path' => '/v1/health']);
         if (! filled($s['base_url'])) {
             $c->update(['status' => 'disconnected', 'last_error' => null, 'last_checked_at' => now()]);
-            return ['ok' => false, 'status' => 'disconnected', 'message' => 'Add an Arena AI endpoint to enable the engine connection.'];
+            return ['ok' => false, 'status' => 'disconnected', 'message' => 'Add an NAi endpoint to enable the engine connection.'];
         }
         try {
             $response = $this->request($s)->timeout((int) config('nai.arena.timeout', 45))->get($this->url($s['base_url'], $s['health_path']));
             if ($response->successful()) {
                 $c->update(['status' => 'connected', 'last_error' => null, 'last_checked_at' => now()]);
-                return ['ok' => true, 'status' => 'connected', 'message' => 'Arena AI responded successfully.'];
+                return ['ok' => true, 'status' => 'connected', 'message' => 'NAi responded successfully.'];
             }
-            $msg = 'Arena AI returned HTTP '.$response->status().'.';
+            $msg = 'NAi returned HTTP '.$response->status().'.';
             $c->update(['status' => 'error', 'last_error' => $msg, 'last_checked_at' => now()]);
             return ['ok' => false, 'status' => 'error', 'message' => $msg];
         } catch (\Throwable $e) {
-            $msg = 'Unable to reach Arena AI. Check the endpoint, network, and credentials.';
+            $msg = 'Unable to reach NAi. Check the endpoint, network, and credentials.';
             $c->update(['status' => 'error', 'last_error' => $msg, 'last_checked_at' => now()]);
             return ['ok' => false, 'status' => 'error', 'message' => $msg];
         }
@@ -83,7 +83,7 @@ class ArenaGateway
     {
         $s = $this->settings();
         if (! filled($s['base_url'])) {
-            throw new RuntimeException('Arena AI is not connected. Configure the Arena endpoint in Settings before sending prompts.');
+            throw new RuntimeException('NAi is not connected. Configure the NAi endpoint in Settings before sending prompts.');
         }
 
         $history = $conversation->messages()
@@ -116,19 +116,19 @@ class ArenaGateway
                 ->timeout((int) config('nai.arena.timeout', 45))
                 ->post($this->url($s['base_url'], $s['chat_path']), $payload);
         } catch (RequestException $e) {
-            throw new RuntimeException('Arena AI request failed with HTTP '.$e->response->status().'.');
+            throw new RuntimeException('NAi request failed with HTTP '.$e->response->status().'.');
         } catch (\Throwable $e) {
-            throw new RuntimeException('Unable to reach Arena AI. The prompt was not answered by a local model.');
+            throw new RuntimeException('Unable to reach NAi. The prompt was not answered by a local model.');
         }
 
         if (! $response->successful()) {
-            throw new RuntimeException('Arena AI returned HTTP '.$response->status().'.');
+            throw new RuntimeException('NAi returned HTTP '.$response->status().'.');
         }
 
         $json = $response->json();
         $content = $this->normalizeReply(is_array($json) ? $json : []);
         if ($content === null || trim($content) === '') {
-            throw new RuntimeException('Arena AI returned an empty or unsupported response. Check the bridge response contract.');
+            throw new RuntimeException('NAi returned an empty or unsupported response. Check the bridge response contract.');
         }
 
         return [

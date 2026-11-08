@@ -3,10 +3,10 @@
 namespace App\Support;
 
 /**
- * Prompt scaffolds for resource-scoped Arena AI conversations.
+ * Prompt scaffolds for resource-scoped NAi conversations.
  *
- * These are instructions NAi sends TO Arena AI. They are not answers, templates
- * for answers, or a local generation mechanism — Arena AI produces all output.
+ * These are instructions NAi sends TO NAi. They are not answers, templates
+ * for answers, or a local generation mechanism — NAi produces all output.
  */
 class Playbooks
 {

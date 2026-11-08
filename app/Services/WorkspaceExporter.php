@@ -13,7 +13,7 @@ use App\Models\Setting;
 
 class WorkspaceExporter
 {
-    /** Operational backup. Deliberately excludes passwords and Arena API keys. */
+    /** Operational backup. Deliberately excludes passwords and NAi API keys. */
     public function snapshot(): array
     {
         $arena = ArenaConnection::first();

@@ -79,7 +79,7 @@ class ArenaController extends Controller
         if (! $title) {
             $title = match (true) {
                 $playbookKey !== null && $subject !== null => Str::limit(Playbooks::get($subjectType, $playbookKey)['label'].' · '.$subject->name, 170),
-                $subject !== null => Str::limit($subject->name.' · '.($prompt ? Str::limit($prompt, 80) : 'Arena AI'), 170),
+                $subject !== null => Str::limit($subject->name.' · '.($prompt ? Str::limit($prompt, 80) : 'NAi'), 170),
                 filled($prompt) => Str::limit($prompt, 60),
                 default => 'New conversation',
             };
@@ -92,7 +92,7 @@ class ArenaController extends Controller
             'playbook' => $playbookKey,
         ]);
 
-        if ($subject) Audit::log('arena.scoped', 'Started an Arena AI conversation scoped to '.$subjectType.' “'.$subject->name.'”', $conversation);
+        if ($subject) Audit::log('arena.scoped', 'Started an NAi conversation scoped to '.$subjectType.' “'.$subject->name.'”', $conversation);
         if (filled($prompt)) $this->processPrompt($conversation, $prompt, $arena);
 
         return redirect()->route('arena.show', $conversation);
@@ -107,12 +107,12 @@ class ArenaController extends Controller
         return redirect()->route('arena.show', $conversation);
     }
 
-    /** Convert a genuine Arena AI reply into a tracked project task. */
+    /** Convert a genuine NAi reply into a tracked project task. */
     public function createTask(Request $request, Message $message)
     {
         $conversation = $message->conversation;
         abort_unless($conversation && $conversation->user_id === auth()->id(), 403);
-        abort_unless($message->isActionable(), 422, 'Only a completed Arena AI reply can be converted into a task.');
+        abort_unless($message->isActionable(), 422, 'Only a completed NAi reply can be converted into a task.');
         if ($message->task) return back()->with('error', 'That reply has already been saved as a task.');
 
         $data = $request->validate([
@@ -131,9 +131,9 @@ class ArenaController extends Controller
             'source_message_id' => $message->id,
         ]);
 
-        Audit::log('task.created', 'Created task “'.$task->title.'” in '.$project->key.' from an Arena AI reply', $task);
+        Audit::log('task.created', 'Created task “'.$task->title.'” in '.$project->key.' from an NAi reply', $task);
 
-        return back()->with('success', 'Task added to '.$project->key.' from the Arena AI reply.');
+        return back()->with('success', 'Task added to '.$project->key.' from the NAi reply.');
     }
 
     public function destroy(Conversation $conversation)
@@ -147,7 +147,7 @@ class ArenaController extends Controller
     public function test(ArenaGateway $arena)
     {
         $result = $arena->healthCheck();
-        Audit::log('arena.test', 'Tested the Arena AI connection: '.$result['status']);
+        Audit::log('arena.test', 'Tested the NAi connection: '.$result['status']);
 
         return back()->with($result['ok'] ? 'success' : 'error', $result['message']);
     }
@@ -171,11 +171,11 @@ class ArenaController extends Controller
             $reply = $arena->chat($conversation, $prompt);
             Message::create(['conversation_id' => $conversation->id, 'role' => 'assistant', 'content' => $reply['content'], 'status' => 'complete', 'arena_request_id' => $reply['request_id'], 'tokens' => $reply['tokens']]);
             $conversation->update(['last_message_at' => now(), 'arena_session_id' => $reply['session_id'] ?? $conversation->arena_session_id, 'title' => $conversation->title === 'New conversation' ? Str::limit($prompt, 60) : $conversation->title]);
-            Audit::log('arena.chat', 'Sent a prompt to Arena AI', $conversation);
+            Audit::log('arena.chat', 'Sent a prompt to NAi', $conversation);
         } catch (\Throwable $e) {
-            Message::create(['conversation_id' => $conversation->id, 'role' => 'assistant', 'content' => 'Arena AI did not return a response.', 'status' => 'failed', 'error' => $e->getMessage()]);
+            Message::create(['conversation_id' => $conversation->id, 'role' => 'assistant', 'content' => 'NAi did not return a response.', 'status' => 'failed', 'error' => $e->getMessage()]);
             $conversation->update(['last_message_at' => now()]);
-            Audit::log('arena.error', 'Arena AI request failed: '.$e->getMessage(), $conversation);
+            Audit::log('arena.error', 'NAi request failed: '.$e->getMessage(), $conversation);
         }
     }
 }

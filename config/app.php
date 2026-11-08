@@ -56,6 +56,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Asset URL
+    |--------------------------------------------------------------------------
+    |
+    | Set ASSET_URL=/ to emit same-origin relative asset URLs. This is useful
+    | when the app is embedded behind a TLS-terminating preview proxy whose
+    | internal Host/scheme differs from the browser-facing origin.
+    |
+    */
+
+    'asset_url' => env('ASSET_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

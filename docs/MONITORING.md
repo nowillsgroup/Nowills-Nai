@@ -2,7 +2,7 @@
 
 NAi monitors the technical estate that is registered in its inventory. Monitoring is
 plain HTTP/TCP probing plus bookkeeping — it is not an AI feature and does not call
-Arena AI.
+NAi.
 
 ## What gets probed
 
@@ -102,7 +102,7 @@ Manual runs are throttled to 6 per minute per user; the endpoint is write-gated
 - Monitoring → **Export checks** — CSV of the retained check history
   (`/monitoring/export`). Cells are escaped against spreadsheet formula injection.
 - Settings → **Export workspace JSON** — includes the monitoring block (retention,
-  open incidents, last 50 resolved incidents). Passwords and Arena API keys are
+  open incidents, last 50 resolved incidents). Passwords and NAi API keys are
   never exported.
 
 ## Behaviour in restricted networks

@@ -141,7 +141,7 @@ class WorkspaceImporter
             }, $items);
         }
         $this->warnings[] = 'Additive merge only: missing records are created; existing records are never overwritten or deleted.';
-        $this->warnings[] = 'Owners, assignees, workspace settings, Arena configuration, conversations, and monitoring history are not imported.';
+        $this->warnings[] = 'Owners, assignees, workspace settings, NAi configuration, conversations, and monitoring history are not imported.';
         $this->warnings[] = 'Imported applications, databases, and infrastructure start as Unknown. Run checks to obtain live health; backup posture starts as Not configured.';
         if (array_diff(array_keys($source), ['format_version', 'platform', 'workspace', 'exported_at', ...array_keys(self::SECTIONS)])) {
             $this->warnings[] = 'Additional snapshot sections were ignored. Only the six supported inventory/project sections can be imported.';

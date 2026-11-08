@@ -2,7 +2,7 @@
 
 NAi supports a **versioned, additive workspace merge** for inventory and project metadata. It is designed for moving missing records between NAi workspaces or restoring records that were accidentally removed — not for replacing a live database.
 
-> For full disaster recovery, continue to use tested MySQL backups and your normal database restore procedure. A NAi JSON snapshot deliberately excludes users, credentials, Arena settings, conversations, and monitoring history.
+> For full disaster recovery, continue to use tested MySQL backups and your normal database restore procedure. A NAi JSON snapshot deliberately excludes users, credentials, NAi settings, conversations, and monitoring history.
 
 ## Workflow
 
@@ -56,7 +56,7 @@ Source application IDs are **file-local references only**. NAi remaps them to de
 ## What is never imported
 
 - Users, passwords, roles, owners, or assignees.
-- Arena API keys, Arena connection settings, or workspace settings.
+- NAi API keys, NAi connection settings, or workspace settings.
 - Conversations, messages, or task-to-message provenance.
 - Monitoring checks, incidents, uptime history, or historical health.
 - Arbitrary extra JSON sections or unknown record fields.

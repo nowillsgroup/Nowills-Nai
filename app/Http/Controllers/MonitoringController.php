@@ -6,6 +6,7 @@ use App\Models\Incident;
 use App\Services\MonitoringStats;
 use App\Services\ResourceMonitor;
 use App\Support\Audit;
+use App\Support\Notifier;
 use App\Support\Resources;
 use Illuminate\Http\Request;
 
@@ -45,6 +46,7 @@ class MonitoringController extends Controller
             'resolved_by' => $request->user()->id, 'resolution_note' => $data['note'] ?? null,
         ]);
         Audit::log('monitoring.incident_resolved', sprintf('Incident manually resolved by %s: %s', $request->user()->name, $incident->title));
+        Notifier::roles(['admin', 'operator'], 'incident.resolved', $incident->resource_name.' recovered', 'Incident manually resolved by '.$request->user()->name.'.', route('monitoring.index', [], false), $incident, $request->user()->id);
 
         return back()->with('success', 'Incident marked as resolved. The next check will reopen it if the resource is still unhealthy.');
     }
