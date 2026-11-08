@@ -49,19 +49,15 @@ jobs:
         uses: ankane/setup-mysql@v1
         with:
           mysql-version: '8.0'
-      - name: Create MySQL database and user
-        run: |
-          mysql -e "CREATE DATABASE nai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-          mysql -e "CREATE USER 'nai'@'%' IDENTIFIED BY 'Nai-CI-2026-Strong!'; GRANT ALL PRIVILEGES ON nai.* TO 'nai'@'%'; FLUSH PRIVILEGES;"
+          database: nai
+          user: nai
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
       - name: Configure MySQL environment
         run: |
           cp .env.example .env
           php artisan key:generate
-          sed -i 's/DB_DATABASE=nai/DB_DATABASE=nai/' .env
-          sed -i 's/DB_USERNAME=nai/DB_USERNAME=nai/' .env
-          sed -i 's/DB_PASSWORD=/DB_PASSWORD=Nai-CI-2026-Strong!/' .env
+          sed -i 's/DB_HOST=127.0.0.1/DB_HOST=localhost/' .env
       - name: Validate migrations on MySQL
         run: |
           php artisan migrate --force
