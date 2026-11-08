@@ -45,14 +45,14 @@ jobs:
           extensions: mbstring, openssl, pdo, pdo_mysql, xml, xmlwriter, curl, zip, ctype, fileinfo, tokenizer, dom
           coverage: none
           tools: composer:v2
-      - name: Install MySQL server (no Docker)
+      - name: Setup MySQL server (no Docker)
+        uses: ankane/setup-mysql@v1
+        with:
+          mysql-version: '8.0'
+      - name: Create MySQL database and user
         run: |
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server mysql-client
-          sudo service mysql start || sudo systemctl start mysql
-          for i in $(seq 1 30); do mysqladmin ping -h 127.0.0.1 --silent && break; sleep 1; done
-          sudo mysql -e "CREATE DATABASE nai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-          sudo mysql -e "CREATE USER 'nai'@'%' IDENTIFIED BY 'Nai-CI-2026-Strong!'; GRANT ALL PRIVILEGES ON nai.* TO 'nai'@'%'; FLUSH PRIVILEGES;"
+          mysql -e "CREATE DATABASE nai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+          mysql -e "CREATE USER 'nai'@'%' IDENTIFIED BY 'Nai-CI-2026-Strong!'; GRANT ALL PRIVILEGES ON nai.* TO 'nai'@'%'; FLUSH PRIVILEGES;"
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
       - name: Configure MySQL environment
