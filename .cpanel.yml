@@ -1,0 +1,14 @@
+---
+# cPanel Git™ Version Control deployment hook.
+#
+# In cPanel -> Git Version Control, clone this repo to: /home/$USER/nai
+# (choose that path in the "Clone URL / path" step). Then point your domain's
+# document root to: /home/$USER/nai/public
+#
+# On every "Deploy HEAD Commit", cPanel runs the tasks below from the repo
+# checkout. They sync the app into DEPLOYPATH (preserving .env and storage)
+# and run the production build. See docs/HOSTINGER.md for the full walkthrough.
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/$USER/nai
+    - /bin/bash deploy/cpanel.sh

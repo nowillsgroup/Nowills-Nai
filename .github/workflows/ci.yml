@@ -1,0 +1,65 @@
+name: NAi CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php }} tests
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, openssl, pdo, pdo_sqlite, pdo_mysql, xml, xmlwriter, curl, zip, ctype, fileinfo, tokenizer, dom
+          coverage: none
+          tools: composer:v2
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Lint
+        run: composer lint
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Tests
+        run: vendor/bin/phpunit
+
+  mysql:
+    name: MySQL schema validation
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, openssl, pdo, pdo_mysql, xml, xmlwriter, curl, zip, ctype, fileinfo, tokenizer, dom
+          coverage: none
+          tools: composer:v2
+      - name: Setup MySQL server (no Docker)
+        uses: ankane/setup-mysql@v1
+        with:
+          mysql-version: '8.0'
+          database: nai
+          user: nai
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Configure MySQL environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          sed -i 's/DB_HOST=127.0.0.1/DB_HOST=localhost/' .env
+      - name: Validate migrations on MySQL
+        run: |
+          php artisan migrate --force
+          php artisan migrate:fresh --force
+          php artisan nai:check
