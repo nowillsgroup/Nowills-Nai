@@ -7,7 +7,7 @@ return [
     // Local preview convenience only: open the workspace without the login step.
     'preview_auto_demo' => (bool) env('NAI_PREVIEW_AUTO_DEMO', false),
 
-    // Landing page for the local auto-demo preview: "dashboard" or "arena".
+    // Landing page for the local auto-demo preview: "dashboard", "arena", or "browser".
     // This is ignored unless preview_auto_demo, demo_mode, and APP_ENV=local are all enabled.
     'preview_landing' => env('NAI_PREVIEW_LANDING', 'dashboard'),
 

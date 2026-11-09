@@ -77,6 +77,24 @@ class PreviewEntryTest extends TestCase
         $this->assertAuthenticatedAs($demo);
     }
 
+    public function test_local_preview_can_land_on_the_arena_browser_inside_the_nai_shell(): void
+    {
+        $this->app->detectEnvironment(fn () => 'local');
+        config(['nai.demo_mode' => true, 'nai.preview_auto_demo' => true, 'nai.preview_landing' => 'browser']);
+        $demo = $this->demoAdmin();
+
+        $this->get('/')->assertRedirect('/arena/browser');
+        $this->assertAuthenticatedAs($demo);
+
+        $this->get('/arena/browser')
+            ->assertOk()
+            ->assertSee('id="arenaFrame"', false)
+            ->assertSee('id="sidebar"', false);
+
+        // The explicit /dashboard URL stays reachable so the sidebar link works.
+        $this->get('/dashboard')->assertOk()->assertSee('Welcome back');
+    }
+
     public function test_preview_auto_demo_requires_explicit_opt_in(): void
     {
         $this->app->detectEnvironment(fn () => 'local');

@@ -38,8 +38,10 @@ class PreviewDemoEntry
             }
         }
 
-        if ($previewEnabled && config('nai.preview_landing') === 'arena' && $request->routeIs('dashboard')) {
-            return redirect()->route('arena.index');
+        if ($previewEnabled && $request->routeIs('dashboard')) {
+            $landing = config('nai.preview_landing');
+            if ($landing === 'arena') return redirect()->route('arena.index');
+            if ($landing === 'browser') return redirect()->route('arena.browser');
         }
 
         return $next($request);
