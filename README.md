@@ -57,11 +57,12 @@ bash deploy/build-cpanel-zip.sh /path/to/NAi-cPanel-Direct-Install.zip
 
 The ZIP extracts **flat** as the project root, bundles production dependencies in
 `build/vendor`, includes a root `.htaccess` fallback into `public/`, and provides
-`public/install.php`. Create an empty MySQL database/user in cPanel, set
-`storage/`, `bootstrap/cache/`, and `public/uploads/` to 755, then open
-`https://your-domain.com/install.php` with the private one-time token from
-`SETUP-TOKEN.txt`. The installer creates `.env`, migrates/seeds, creates the admin,
-caches production, prints the cron command, and deletes itself. Package guide:
+`public/install.php` plus a visible root-level `install.php` launcher. Create an
+empty MySQL database/user in cPanel, set `storage/`, `bootstrap/cache/`, and
+`public/uploads/` to 755, then open `https://your-domain.com/install.php` with the
+private one-time token from `SETUP-TOKEN.txt`. The installer creates `.env`,
+migrates/seeds, creates the admin, caches production, prints the cron command,
+and deletes both installer files. Package guide:
 [`deploy/cpanel-package/docs/INSTALL-CPANEL.md`](deploy/cpanel-package/docs/INSTALL-CPANEL.md).
 
 ## Direct install on Hostinger (VPS or cPanel from Git)
