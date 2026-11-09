@@ -25,6 +25,9 @@ class ArenaBrowserTest extends TestCase
 
     public function test_browser_frames_arena_ai_inside_the_nai_shell(): void
     {
+        // Offline, permissive probe: this test asserts markup, not arena.ai's policy.
+        Http::fake(['*' => Http::response('', 200)]);
+
         $this->actingAs($this->user())->get('/arena/browser')
             ->assertOk()
             ->assertSee('id="arenaFrame"', false)
@@ -40,6 +43,9 @@ class ArenaBrowserTest extends TestCase
 
     public function test_only_the_browser_nav_item_is_active_on_the_browser_page(): void
     {
+        // Offline, permissive probe: this test asserts markup, not arena.ai's policy.
+        Http::fake(['*' => Http::response('', 200)]);
+
         $html = $this->actingAs($this->user())->get('/arena/browser')->assertOk()->getContent();
         $this->assertStringContainsString('class="nav-item nav-arena active"', $html);
         $this->assertStringNotContainsString('class="nav-item active"><svg', substr($html, 0, strpos($html, 'nav-arena')));
@@ -55,6 +61,9 @@ class ArenaBrowserTest extends TestCase
 
     public function test_user_visible_branding_is_nai_not_arena_ai(): void
     {
+        // Offline, permissive probe: this test asserts markup, not arena.ai's policy.
+        Http::fake(['*' => Http::response('', 200)]);
+
         $user = $this->user();
         foreach (['/arena/browser', '/arena', '/dashboard', '/settings', '/notifications'] as $path) {
             $html = $this->actingAs($user)->get($path)->assertOk()->getContent();
@@ -64,6 +73,9 @@ class ArenaBrowserTest extends TestCase
 
     public function test_frame_is_not_credential_proxied(): void
     {
+        // Offline, permissive probe: this test asserts markup, not arena.ai's policy.
+        Http::fake(['*' => Http::response('', 200)]);
+
         $html = $this->actingAs($this->user())->get('/arena/browser')->assertOk()->getContent();
         $this->assertStringNotContainsString('type="password"', $html);
         $this->assertStringContainsString('sandbox="allow-same-origin allow-scripts allow-forms', $html);
@@ -73,6 +85,9 @@ class ArenaBrowserTest extends TestCase
 
     public function test_csp_allows_https_frames_but_keeps_everything_else_locked(): void
     {
+        // Offline, permissive probe: this test asserts markup, not arena.ai's policy.
+        Http::fake(['*' => Http::response('', 200)]);
+
         $csp = $this->actingAs($this->user())->get('/arena/browser')->headers->get('Content-Security-Policy');
         $this->assertStringContainsString("frame-src 'self' https://arena.ai https:", $csp);
         $this->assertStringContainsString("default-src 'self'", $csp);
@@ -84,6 +99,9 @@ class ArenaBrowserTest extends TestCase
 
     public function test_admin_can_point_the_frame_at_another_arena_address(): void
     {
+        // Offline, permissive probe: this test asserts markup, not arena.ai's policy.
+        Http::fake(['*' => Http::response('', 200)]);
+
         $admin = $this->user();
         $this->actingAs($admin)->put('/settings', [
             'workspace_name' => 'Nowills Group', 'chat_path' => '/v1/chat', 'health_path' => '/v1/health',
@@ -155,6 +173,9 @@ class ArenaBrowserTest extends TestCase
      */
     public function test_browser_layout_ships_in_its_own_cache_busted_stylesheet(): void
     {
+        // Offline, permissive probe: this test asserts markup, not arena.ai's policy.
+        Http::fake(['*' => Http::response('', 200)]);
+
         $content = $this->actingAs($this->user())->get('/arena/browser')->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('#href="/css/nai\.css\?v=[a-f0-9]+"#', $content);
@@ -273,5 +294,21 @@ class ArenaBrowserTest extends TestCase
             ->assertOk()
             ->assertJsonPath('status', 'blocked')
             ->assertJsonPath('final_url', 'https://example.com/final');
+    }
+
+    /**
+     * A public hostname that resolves into private space must still be refused:
+     * checking only the URL shape would let DNS rebinding reach the internal
+     * network on the actual connection.
+     */
+    public function test_probe_refuses_a_public_name_that_resolves_into_private_space(): void
+    {
+        Http::fake(['*' => Http::response('', 200)]);
+
+        $this->actingAs($this->user())->getJson('/arena/browser/probe?url='.urlencode('https://rebind.example.com/'))
+            ->assertOk()
+            ->assertJsonPath('status', 'unknown');
+
+        Http::assertNothingSent();
     }
 }

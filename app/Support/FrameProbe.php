@@ -54,7 +54,7 @@ class FrameProbe
             // automatic following would let a public host bounce the probe into
             // the private network.
             for ($hop = 0; $hop < 4; $hop++) {
-                if (! self::isSafeTarget($current)) {
+                if (! self::isSafeTarget($current) || ! self::resolvesToPublicAddress($current)) {
                     return self::result('unknown', '', $current);
                 }
 
@@ -163,9 +163,10 @@ class FrameProbe
     }
 
     /**
-     * Only public http(s) destinations may be probed. Without this, any signed-in
-     * user could turn the probe into a scanner for the host's private network
-     * (localhost, 10/8, 169.254.169.254 cloud metadata, ...).
+     * Cheap, deterministic URL-shape check: public http(s) on 80/443, no
+     * localhost/.local/.internal names, and no literal private/reserved IP.
+     * Hostname resolution is checked separately by resolvesToPublicAddress()
+     * right before each request, so this method never touches the network.
      */
     public static function isSafeTarget(string $url): bool
     {
@@ -185,24 +186,65 @@ class FrameProbe
         if ($host === 'localhost' || str_ends_with($host, '.localhost')) return false;
         if (str_ends_with($host, '.local') || str_ends_with($host, '.internal')) return false;
 
-        $ips = filter_var($host, FILTER_VALIDATE_IP)
-            ? [$host]
-            : self::resolve($host);
+        // A literal IP is decided here; a hostname is resolved at request time.
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            return self::isPublicIp($host);
+        }
 
+        // Reject names that can only ever mean "this machine / this network".
+        if (! str_contains($host, '.') || str_ends_with($host, '.')) return false;
+
+        return true;
+    }
+
+    /**
+     * Resolve the host and refuse anything landing in private/reserved space.
+     * Runs immediately before each outbound request (and on every redirect hop)
+     * so a public name cannot be pointed at an internal address between the
+     * shape check and the connection.
+     */
+    private static function resolvesToPublicAddress(string $url): bool
+    {
+        $host = trim(strtolower((string) parse_url($url, PHP_URL_HOST)), '[]');
+        if ($host === '') return false;
+
+        $ips = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : self::resolve($host);
         if ($ips === []) return false;
 
         foreach ($ips as $ip) {
-            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
-                return false;
-            }
+            if (! self::isPublicIp($ip)) return false;
         }
 
         return true;
     }
 
+    private static function isPublicIp(string $ip): bool
+    {
+        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+    }
+
+    /**
+     * Override hostname resolution. Used by the test suite so verdicts never
+     * depend on a runner's DNS, and available to callers that need a custom
+     * resolver. Pass null to restore native resolution.
+     *
+     * @param  (callable(string):array<int,string>)|null  $resolver
+     */
+    public static function resolveUsing(?callable $resolver): void
+    {
+        self::$resolver = $resolver;
+    }
+
+    /** @var (callable(string):array<int,string>)|null */
+    private static $resolver = null;
+
     /** @return array<int,string> */
     private static function resolve(string $host): array
     {
+        if (self::$resolver !== null) {
+            return array_values(array_unique((array) (self::$resolver)($host)));
+        }
+
         $ips = [];
 
         try {
