@@ -12,11 +12,6 @@
 <div class="card" style="padding:14px"><div class="flex items-center justify-between"><strong style="font-size:12px">Engine status</strong><x-badge :status="$arenaStatus" /></div><p class="faint" style="font-size:11.5px;margin:10px 0 0">NAi forwards prompts and workspace context to NAi. No local model or simulated responses.</p>@can('write')<form method="POST" action="{{ route('arena.test') }}" class="mt-16">@csrf<button class="btn btn-sm btn-block"><x-icon name="refresh" :size="14" />Test connection</button></form>@endcan</div>
 </div>
 <div class="arena-main">
-<div class="arena-launch-card">
-    <div class="alc-icon"><x-icon name="sparkles" :size="22" /></div>
-    <div class="alc-body"><strong>Open Arena AI</strong><span class="faint" style="font-size:12px">Work directly in Arena AI — sign in with your Arena AI account in a new tab. NAi stays your branded workspace; Arena AI is the engine.</span></div>
-    <a href="{{ \App\Support\ArenaPortal::url() }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><x-icon name="external" :size="15" />Launch Arena AI</a>
-</div>
 @if($subject)
 <div class="scope-banner">
     <span class="cell-icon"><x-icon :name="\App\Support\Subjects::icon($subjectType)" :size="17" /></span>

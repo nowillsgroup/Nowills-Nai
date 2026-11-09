@@ -25,11 +25,8 @@ class SettingsController extends Controller
             'workspace_ref' => 'nullable|string|max:160',
             'chat_path' => 'required|string|max:200',
             'health_path' => 'required|string|max:200',
-            'arena_portal_url' => 'nullable|url|max:500',
         ]);
         Setting::updateOrCreate(['key' => 'workspace_name'], ['value' => $data['workspace_name']]);
-        $portal = \App\Support\ArenaPortal::sanitize($data['arena_portal_url'] ?? null);
-        Setting::updateOrCreate(['key' => 'arena_portal_url'], ['value' => $portal]);
         $connection = ArenaConnection::query()->firstOrNew([]);
         $connection->fill([
             'base_url' => $data['base_url'] ?? null,

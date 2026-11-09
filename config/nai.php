@@ -23,9 +23,6 @@ return [
     ],
 
     'arena' => [
-        // Public Arena AI website opened by the NAi launcher (new tab). This is
-        // the human-facing site, separate from the machine API base_url below.
-        'portal_url' => env('ARENA_PORTAL_URL', 'https://arena.ai'),
         'base_url' => env('ARENA_BASE_URL', ''),
         'api_key' => env('ARENA_API_KEY', ''),
         'workspace_ref' => env('ARENA_WORKSPACE_REF', ''),

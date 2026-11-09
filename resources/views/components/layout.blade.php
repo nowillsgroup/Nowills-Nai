@@ -29,7 +29,7 @@
             <div class="nav-label">Overview</div>
             <a href="{{ route('dashboard.home') }}" class="nav-item {{ request()->routeIs('dashboard*') ? 'active' : '' }}"><x-icon name="dashboard" :size="18" /><span>Dashboard</span></a>
             <a href="{{ route('arena.index') }}" class="nav-item {{ request()->routeIs('arena.*') ? 'active' : '' }}"><x-icon name="sparkles" :size="18" /><span>NAi</span><span class="nav-pill">Engine</span></a>
-            <a href="{{ \App\Support\ArenaPortal::url() }}" target="_blank" rel="noopener noreferrer" class="nav-item nav-external"><x-icon name="external" :size="18" /><span>Arena AI</span><span class="nav-pill">Open</span></a>
+            <a href="{{ route('arena.index') }}" class="nav-item nav-arena"><x-icon name="sparkles" :size="18" /><span>Arena AI</span><span class="nav-pill">Workspace</span></a>
             <div class="nav-label">Manage</div>
             <a href="{{ route('inventory.index','applications') }}" class="nav-item {{ request()->is('inventory/applications*') ? 'active' : '' }}"><x-icon name="apps" :size="18" /><span>Applications</span></a>
             <a href="{{ route('inventory.index','repositories') }}" class="nav-item {{ request()->is('inventory/repositories*') ? 'active' : '' }}"><x-icon name="git" :size="18" /><span>Repositories</span></a>
@@ -59,7 +59,7 @@
             <div class="topbar-title"><h1>{{ $title }}</h1>@if($subtitle)<span>{{ $subtitle }}</span>@endif</div>
             <div class="topbar-actions">
                 <button class="search-trigger" id="searchTrigger"><x-icon name="search" :size="16" /><span>Search workspace…</span><kbd>⌘K</kbd></button>
-                <a href="{{ \App\Support\ArenaPortal::url() }}" target="_blank" rel="noopener noreferrer" class="arena-launch" title="Open Arena AI in a new tab"><x-icon name="sparkles" :size="15" /><span>Arena AI</span><x-icon name="external" :size="13" /></a>
+                <a href="{{ route('arena.index') }}" class="arena-launch" title="Open Arena AI in the NAi workspace"><x-icon name="sparkles" :size="15" /><span>Arena AI</span><x-icon name="arrow-right" :size="13" /></a>
                 @if(config('nai.demo_mode'))<span class="demo-chip">Demo</span>@endif
                 <div class="dropdown">
                     <button class="icon-btn bell-btn" id="bellBtn" aria-label="Notifications ({{ $navUnread }} unread)"><x-icon name="bell" :size="17" />@if($navUnread)<span class="bell-count">{{ min($navUnread, 99) }}</span>@endif</button>
