@@ -6,7 +6,9 @@ Built:   {{BUILT_AT}}
 Source:  {{SOURCE_COMMIT}}
 
 Extracted FLAT: the folder containing this file is the project root.
-You should see app/, bootstrap/, build/, public/, storage/, artisan, and .htaccess.
+You should see install.php, app/, bootstrap/, build/, public/, storage/, artisan,
+and .htaccess. The PHP installer is public/install.php; install.php in this root
+folder is a launcher/fallback so the installer is visible immediately after extract.
 
 QUICK START
 -----------
@@ -41,7 +43,7 @@ QUICK START
    workspace/property name, and administrator account.
 
 6. Delete the installer.
-   The installer removes public/install.php, SETUP-TOKEN.txt, and
+   The installer removes install.php, public/install.php, SETUP-TOKEN.txt, and
    build/installer-config.php automatically when it finishes. If it reports a
    cleanup warning, remove those files manually in File Manager.
 

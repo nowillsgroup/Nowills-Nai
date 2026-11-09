@@ -292,7 +292,7 @@ class WebInstaller
         @unlink($this->pendingPath());
 
         $warnings = [];
-        foreach (['public/install.php', 'SETUP-TOKEN.txt', 'build/installer-config.php'] as $relative) {
+        foreach (['install.php', 'public/install.php', 'SETUP-TOKEN.txt', 'build/installer-config.php'] as $relative) {
             $path = $this->root.'/'.$relative;
             if (is_file($path) && ! @unlink($path)) {
                 $warnings[] = 'Delete '.$relative.' manually in cPanel File Manager; PHP could not remove it automatically.';

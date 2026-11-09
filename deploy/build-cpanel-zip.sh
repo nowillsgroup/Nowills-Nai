@@ -104,7 +104,7 @@ chmod 600 "$STAGE/SETUP-TOKEN.txt" "$STAGE/build/installer-config.php"
 printf '[NAi package] Validating release\n'
 "$PHP_BIN" -l public/install.php >/dev/null
 "$PHP_BIN" -l app/Support/WebInstaller.php >/dev/null
-for required in .htaccess START-HERE.txt README.md SETUP-TOKEN.txt build/installer-config.php \
+for required in .htaccess install.php START-HERE.txt README.md SETUP-TOKEN.txt build/installer-config.php \
                 build/vendor/autoload.php public/install.php public/index.php public/.htaccess \
                 public/uploads/.htaccess docs/INSTALL-CPANEL.md docs/MODULES.md artisan composer.lock; do
   [[ -f "$required" ]] || { echo "Missing release file: $required" >&2; exit 1; }

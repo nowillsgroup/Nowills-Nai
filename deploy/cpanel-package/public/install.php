@@ -46,7 +46,7 @@ function page_bottom(): void { echo '</section><p class="footer">AI development 
 if ($installer->isInstalled()) {
     http_response_code(410);
     page_top('Installation already complete');
-    echo '<div class="alert ok">NAi is installed and locked. This installer cannot create another administrator or change the database.</div><p>If this file is still visible, delete <code>public/install.php</code> in cPanel File Manager. Also delete <code>SETUP-TOKEN.txt</code> and <code>build/installer-config.php</code> if they remain.</p><p><a class="button" href="/login">Open NAi sign-in</a></p>';
+    echo '<div class="alert ok">NAi is installed and locked. This installer cannot create another administrator or change the database.</div><p>If this file is still visible, delete <code>public/install.php</code> and the root <code>install.php</code> launcher in cPanel File Manager. Also delete <code>SETUP-TOKEN.txt</code> and <code>build/installer-config.php</code> if they remain.</p><p><a class="button" href="/login">Open NAi sign-in</a></p>';
     page_bottom(); exit;
 }
 

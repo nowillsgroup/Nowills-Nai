@@ -87,6 +87,7 @@ class WebInstallerTest extends TestCase
 
     public function test_completion_locks_installation_and_removes_installer_material(): void
     {
+        file_put_contents($this->root.'/install.php', '<?php // root launcher');
         file_put_contents($this->root.'/public/install.php', '<?php // installer');
         file_put_contents($this->root.'/SETUP-TOKEN.txt', $this->token);
         $probe = new class($this->root) extends WebInstaller {
@@ -94,6 +95,7 @@ class WebInstallerTest extends TestCase
         };
         $data = (new WebInstaller($this->root))->validate($this->input())['data'];
         $this->assertSame([], $probe->finish($data));
+        $this->assertFileDoesNotExist($this->root.'/install.php');
         $this->assertFileDoesNotExist($this->root.'/public/install.php');
         $this->assertFileDoesNotExist($this->root.'/SETUP-TOKEN.txt');
         $this->assertFileDoesNotExist($this->root.'/build/installer-config.php');

@@ -17,7 +17,9 @@ In **cPanel → File Manager**, upload the ZIP outside `public_html` when possib
 /home/YOURUSER/nowills-nai
 ```
 
-Extract it there. After extraction, that folder must contain `app/`, `bootstrap/`, `build/`, `public/`, `storage/`, `artisan`, and `.htaccess` directly.
+Extract it there. After extraction, that folder must contain `install.php`, `app/`, `bootstrap/`, `build/`, `public/`, `storage/`, `artisan`, and `.htaccess` directly.
+
+The PHP installer file is `public/install.php`. A root-level `install.php` launcher is also included so the installer is visible immediately after extraction and can act as a fallback when the project root itself is served. Both are removed after successful installation.
 
 Enable **Settings → Show Hidden Files** so you can see `.htaccess` and, later, `.env`.
 
@@ -104,7 +106,7 @@ The installer then:
 5. creates the administrator with a hashed password;
 6. caches configuration, routes, and views;
 7. writes `storage/app/installed.lock`;
-8. removes `public/install.php`, `SETUP-TOKEN.txt`, and `build/installer-config.php`.
+8. removes `install.php`, `public/install.php`, `SETUP-TOKEN.txt`, and `build/installer-config.php`.
 
 Demo mode and preview auto-login are **off**. The Arena AI launcher points to the real external `https://arena.ai`; the machine engine connection remains disconnected until an administrator configures a real endpoint.
 
@@ -113,6 +115,7 @@ Demo mode and preview auto-login are **off**. The Arena AI launcher points to th
 Cleanup is automatic. If the success page reports a cleanup warning, manually remove:
 
 ```text
+install.php
 public/install.php
 SETUP-TOKEN.txt
 build/installer-config.php

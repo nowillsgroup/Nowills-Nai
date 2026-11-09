@@ -122,6 +122,7 @@ jobs:
           body=response.read().decode()
           if 'NAi is ready' not in body:
               print(body); sys.exit('Installer did not complete')
+          assert not (root/'install.php').exists(), 'root installer launcher was not deleted'
           assert not (root/'public/install.php').exists(), 'installer was not deleted'
           assert not (root/'SETUP-TOKEN.txt').exists(), 'setup token was not deleted'
           assert not (root/'build/installer-config.php').exists(), 'token config was not deleted'
