@@ -20,6 +20,27 @@ use Illuminate\Support\Facades\Http;
 class FrameProbe
 {
     /**
+     * Total wall-clock budget for one probe, across every redirect hop and
+     * every request. The browser view probes during page render, so without a
+     * ceiling a slow origin (4 hops x HEAD + confirm GET x 4s timeout) could
+     * stall the response for ~16s and trip a shared-hosting PHP timeout.
+     */
+    private const BUDGET_SECONDS = 2.5;
+
+    /** Configurable so slow hosting can lower it and tests can pin it. */
+    private static function budget(): float
+    {
+        $configured = config('nai.arena.probe_budget');
+
+        return is_numeric($configured) && $configured > 0
+            ? (float) $configured
+            : self::BUDGET_SECONDS;
+    }
+
+    /** Per-request timeout, always clamped to the remaining budget. */
+    private const REQUEST_TIMEOUT = 2;
+
+    /**
      * @return array{status:string,reason:string,final_url:string}
      */
     public static function check(string $url, bool $refresh = false): array
@@ -33,6 +54,14 @@ class FrameProbe
         }
 
         $result = cache()->remember($key, 600, fn () => self::probe($url, $naiHost));
+
+        // A definite verdict is stable, so keep it for 10 minutes. An inconclusive
+        // one is usually a slow or unreachable origin: retry it much sooner so a
+        // transient network problem does not pin the panel for 10 minutes, while
+        // still absorbing repeat hits instead of re-blocking every visitor.
+        if (($result['status'] ?? 'unknown') === 'unknown') {
+            cache()->put($key, $result, 30);
+        }
 
         // Normalise: callers (including the Blade view) rely on all three keys.
         return [
@@ -48,25 +77,33 @@ class FrameProbe
     private static function probe(string $url, string $naiHost): array
     {
         $current = $url;
+        $deadline = microtime(true) + self::budget();
 
         try {
             // Follow redirects by hand so every hop can be re-validated. Guzzle's
             // automatic following would let a public host bounce the probe into
             // the private network.
             for ($hop = 0; $hop < 4; $hop++) {
+                $remaining = $deadline - microtime(true);
+                if ($remaining <= 0.15) {
+                    return self::result('unknown', '', $current);
+                }
+
                 if (! self::isSafeTarget($current) || ! self::resolvesToPublicAddress($current)) {
                     return self::result('unknown', '', $current);
                 }
 
                 $usedGet = false;
-                $response = Http::timeout(4)
+                $response = Http::timeout(self::timeoutFor($deadline))
+                    ->connectTimeout(1)
                     ->withoutRedirecting()
                     ->withHeaders(['User-Agent' => 'Mozilla/5.0 (compatible; NAi-Workspace/1.0)'])
                     ->head($current);
 
                 // Some servers reject or under-report on HEAD.
-                if (in_array($response->status(), [400, 403, 405, 501], true)) {
-                    $response = Http::timeout(4)
+                if (in_array($response->status(), [400, 403, 405, 501], true) && microtime(true) < $deadline) {
+                    $response = Http::timeout(self::timeoutFor($deadline))
+                        ->connectTimeout(1)
                         ->withoutRedirecting()
                         ->withHeaders(['User-Agent' => 'Mozilla/5.0 (compatible; NAi-Workspace/1.0)'])
                         ->get($current);
@@ -88,8 +125,9 @@ class FrameProbe
                 // Absence of a blocking header on HEAD is not proof: plenty of
                 // apps only add XFO/CSP to real GET responses. Confirm with a GET
                 // before promising the user an embeddable page.
-                if ($verdict['status'] === 'allowed' && ! $usedGet) {
-                    $get = Http::timeout(4)
+                if ($verdict['status'] === 'allowed' && ! $usedGet && microtime(true) < $deadline) {
+                    $get = Http::timeout(self::timeoutFor($deadline))
+                        ->connectTimeout(1)
                         ->withoutRedirecting()
                         ->withHeaders(['User-Agent' => 'Mozilla/5.0 (compatible; NAi-Workspace/1.0)'])
                         ->get($current);
@@ -106,6 +144,14 @@ class FrameProbe
             // Offline, DNS failure, TLS blocked, timeout: do not guess.
             return self::result('unknown', '', $current);
         }
+    }
+
+    /** Never let a single request outlive the overall probe budget. */
+    private static function timeoutFor(float $deadline): int
+    {
+        $remaining = $deadline - microtime(true);
+
+        return max(1, (int) ceil(min(self::REQUEST_TIMEOUT, max(0, $remaining))));
     }
 
     /**

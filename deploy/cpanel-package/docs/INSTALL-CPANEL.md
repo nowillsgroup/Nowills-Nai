@@ -184,6 +184,19 @@ proxy the site to strip those headers, because that would put your password in
 NAi's path. Use **Open in tab**, or point Settings -> Browser start address at a
 site that permits embedding.
 
+### The browser page is slow to appear
+
+NAi checks whether the destination allows framing while the page is being
+built. That check is capped by `ARENA_PROBE_BUDGET` in `.env` (default `2.5`
+seconds). On slow shared hosting, lower it:
+
+```
+ARENA_PROBE_BUDGET=1.5
+```
+
+When the budget runs out NAi reports the result as unknown and still attempts
+the frame, so a sluggish destination can never hold the page hostage.
+
 ## Troubleshooting
 
 | Symptom | Check |

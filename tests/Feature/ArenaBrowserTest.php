@@ -311,4 +311,55 @@ class ArenaBrowserTest extends TestCase
 
         Http::assertNothingSent();
     }
+
+    /**
+     * The probe runs during page render, so a slow origin must not be able to
+     * stall the response. With the budget exhausted it stops issuing requests
+     * and reports "unknown" instead of chasing the confirm-GET and redirects.
+     */
+    public function test_probe_stops_when_its_wall_clock_budget_is_exhausted(): void
+    {
+        config(['nai.arena.probe_budget' => 0.2]);
+        $calls = 0;
+        Http::fake(function () use (&$calls) {
+            $calls++;
+            usleep(300000); // each request overruns the whole budget on its own
+
+            return Http::response('', 302, ['Location' => 'https://example.com/next'.$calls]);
+        });
+
+        $start = microtime(true);
+        $result = $this->actingAs($this->user())
+            ->getJson('/arena/browser/probe?url='.urlencode('https://example.com/start'))
+            ->assertOk()
+            ->assertJsonPath('status', 'unknown');
+        $elapsed = microtime(true) - $start;
+
+        $this->assertSame(1, $calls, 'The probe must stop once its budget is spent.');
+        $this->assertLessThan(2.0, $elapsed, 'Page render must not be held hostage by a slow origin.');
+    }
+
+    /**
+     * An inconclusive verdict is still cached briefly: a slow origin must not
+     * make every subsequent page load pay the full budget again.
+     */
+    public function test_inconclusive_verdict_is_cached_to_absorb_repeat_hits(): void
+    {
+        config(['nai.arena.probe_budget' => 0.2]);
+        $calls = 0;
+        Http::fake(function () use (&$calls) {
+            $calls++;
+            usleep(300000);
+
+            return Http::response('', 302, ['Location' => 'https://example.com/loop'.$calls]);
+        });
+
+        $user = $this->user();
+        $target = '/arena/browser/probe?url='.urlencode('https://example.com/start');
+
+        $this->actingAs($user)->getJson($target)->assertOk()->assertJsonPath('status', 'unknown');
+        $this->actingAs($user)->getJson($target)->assertOk()->assertJsonPath('status', 'unknown');
+
+        $this->assertSame(1, $calls, 'A repeat hit must be served from cache, not re-probed.');
+    }
 }

@@ -32,5 +32,11 @@ return [
         'chat_path' => env('ARENA_CHAT_PATH', '/v1/chat'),
         'health_path' => env('ARENA_HEALTH_PATH', '/v1/health'),
         'timeout' => (int) env('ARENA_TIMEOUT', 45),
+
+        // Wall-clock ceiling for the browser's "can this site be framed?" probe.
+        // It runs during page render, so it must stay well inside a shared
+        // host's PHP execution limit. Lower it on slow hosting; the panel then
+        // reports "unknown" and still attempts the frame.
+        'probe_budget' => (float) env('ARENA_PROBE_BUDGET', 2.5),
     ],
 ];
