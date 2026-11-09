@@ -98,7 +98,7 @@ sudo chown -R www-data:www-data /var/www/nai/storage /var/www/nai/bootstrap/cach
 ### A5. Sign in
 
 Open `https://nai.yourdomain.com/login` and sign in with the admin you created.
-Configure the Arena AI engine endpoint in **Settings** when ready.
+Configure the NAi engine endpoint in **Settings** when ready.
 
 **Updates:** `cd /var/www/nai && git pull && bash install.sh` (safe to re-run).
 

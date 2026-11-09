@@ -33,6 +33,7 @@ class ArenaBrowserTest extends TestCase
             ->assertSee('sidebar-brand', false)
             ->assertSee('content-fluid', false)
             ->assertSee('Open in tab')
+            ->assertDontSee('Arena AI')
             ->assertSee('arena-browser.js', false)
             ->assertSee('data-probe="/arena/browser/probe"', false);
     }
@@ -52,13 +53,22 @@ class ArenaBrowserTest extends TestCase
             ->assertSee('class="nav-item nav-arena "', false);
     }
 
+    public function test_user_visible_branding_is_nai_not_arena_ai(): void
+    {
+        $user = $this->user();
+        foreach (['/arena/browser', '/arena', '/dashboard', '/settings', '/notifications'] as $path) {
+            $html = $this->actingAs($user)->get($path)->assertOk()->getContent();
+            $this->assertStringNotContainsString('Arena AI', $html, 'Arena AI branding leaked on '.$path);
+        }
+    }
+
     public function test_frame_is_not_credential_proxied(): void
     {
         $html = $this->actingAs($this->user())->get('/arena/browser')->assertOk()->getContent();
         $this->assertStringNotContainsString('type="password"', $html);
         $this->assertStringContainsString('sandbox="allow-same-origin allow-scripts allow-forms', $html);
         $this->assertStringNotContainsString('allow-storage-access-by-activation', $html);
-        $this->assertStringContainsString('title="Arena AI"', $html);
+        $this->assertStringContainsString('title="NAi browser"', $html);
     }
 
     public function test_csp_allows_https_frames_but_keeps_everything_else_locked(): void

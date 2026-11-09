@@ -1,6 +1,6 @@
 /*
- * Arena AI browser: the real Arena AI site inside the NAi shell.
- * The frame is a direct browser-to-Arena-AI connection. NAi does not proxy,
+ * NAi browser: an external site framed inside the NAi shell.
+ * The frame is a direct browser-to-site connection. NAi does not proxy,
  * intercept, or store anything typed into it.
  */
 (function () {
@@ -46,7 +46,7 @@
     clearTimeout(loadTimer);
     loadTimer = setTimeout(function () {
       if (loading) loading.hidden = true;
-      setHint('Arena AI is taking a while to appear. It may be blocking embedding — “Open in tab” always works.', 'warn');
+      setHint('This page is taking a while to appear. It may be blocking embedding — “Open in tab” always works.', 'warn');
     }, 12000);
   }
 
@@ -125,7 +125,7 @@
   const hintClose = document.getElementById('browserHintClose');
   if (hintClose) hintClose.addEventListener('click', function () { hint.hidden = true; });
 
-  // Ask the server whether Arena AI is willing to be framed, so a refusal is
+  // Ask the server whether the site is willing to be framed, so a refusal is
   // explained instead of leaving an empty panel.
   if (root.dataset.probe) {
     fetch(root.dataset.probe, { headers: { Accept: 'application/json' } })
@@ -133,9 +133,9 @@
       .then(function (data) {
         if (!data) return;
         if (data.status === 'blocked') {
-          setHint((data.reason || 'Arena AI refuses to be embedded.') + ' Use “Open in tab” to sign in and work — Arena AI stays one click away while NAi keeps your workspace around it.', 'warn');
+          setHint((data.reason || 'This site refuses to be embedded.') + ' Use “Open in tab” to sign in and work — it stays one click away while NAi keeps your workspace around it.', 'warn');
         } else if (data.status === 'allowed') {
-          setHint('Arena AI is loading inside NAi. Sign in on the Arena AI page itself — NAi never sees your credentials.', 'ok');
+          setHint('Loading inside NAi. Sign in on the framed page itself — NAi never sees your credentials.', 'ok');
         }
       })
       .catch(function () { /* offline or blocked: the default hint stays */ });

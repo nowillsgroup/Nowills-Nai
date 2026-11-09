@@ -24,7 +24,8 @@ class ArenaLauncherTest extends TestCase
                 ->assertSee('arena-launch', false)
                 ->assertSee('href="'.route('arena.browser').'"', false)
                 ->assertSee('nav-arena', false)
-                ->assertDontSee('target="_blank"', false);
+                ->assertDontSee('target="_blank"', false)
+                ->assertDontSee('Arena AI');
         }
     }
 
@@ -35,14 +36,16 @@ class ArenaLauncherTest extends TestCase
             ->assertSee('Build with')
             ->assertSee('arenaFirstPrompt')
             ->assertSee('Start conversation')
-            ->assertDontSee('Launch Arena AI');
+            ->assertDontSee('Launch Arena AI')
+            ->assertDontSee('Arena AI');
     }
 
     public function test_settings_exposes_the_frame_address(): void
     {
         $this->actingAs($this->user())->get('/settings')
             ->assertOk()
-            ->assertSee('Arena AI browser')
+            ->assertSee('NAi browser')
+            ->assertDontSee('Arena AI')
             ->assertSee('name="arena_portal_url"', false);
     }
 

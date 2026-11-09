@@ -565,14 +565,14 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .notif-actions form{margin:0}
 @media(max-width:700px){.bell-menu{position:fixed;left:16px;right:16px;top:64px;width:auto}.notif-item{flex-wrap:wrap}.notif-actions{margin-left:43px}}
 
-/* Arena AI launcher: opens the internal NAi engine workspace in the same tab */
+/* NAi browser launcher: opens the framed browser workspace in the same tab */
 .arena-launch{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:600;color:#fff;background:linear-gradient(135deg,#6366f1,#8b5cf6 55%,#d946ef);border:1px solid rgba(167,139,250,.4);white-space:nowrap;transition:.15s;box-shadow:0 2px 10px rgba(139,92,246,.25)}
 .arena-launch:hover{filter:brightness(1.1);box-shadow:0 3px 14px rgba(139,92,246,.4)}
 .arena-launch .icon:last-child{opacity:.8}
 .nav-arena .nav-pill{background:rgba(56,189,248,.12);color:#7dd3fc;border-color:rgba(56,189,248,.25)}
 @media(max-width:900px){.arena-launch span{display:none}.arena-launch{padding:8px 10px}}
 
-/* Arena AI browser: real Arena AI framed inside the NAi shell. */
+/* NAi browser: an external site framed inside the NAi shell. */
 body.fluid-page{overflow:hidden}
 .fluid-page .app-shell{height:100vh;min-height:0}
 .fluid-page .main-wrap{height:100vh;overflow:hidden}

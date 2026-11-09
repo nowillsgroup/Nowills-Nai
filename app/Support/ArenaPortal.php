@@ -5,13 +5,13 @@ namespace App\Support;
 use App\Models\Setting;
 
 /**
- * Resolves the Arena AI address shown inside NAi's embedded browser.
+ * Resolves the start address for the NAi browser view.
  *
- * NAi frames the real Arena AI site so a person can sign in and work without
- * leaving the NAi shell. NAi never sees, stores, forwards, or replays Arena AI
- * credentials: the frame talks to Arena AI directly from the user's browser.
- * If Arena AI refuses to be framed, the browser view offers a one-click exit
- * to a normal browser tab.
+ * NAi frames an external site so a person can sign in and work without
+ * leaving the NAi shell. NAi never sees, stores, forwards, or replays that
+ * site's credentials: the frame talks to it directly from the user's browser.
+ * If the site refuses to be framed, the view offers a one-click exit to a
+ * normal browser tab. The default target remains https://arena.ai.
  */
 class ArenaPortal
 {

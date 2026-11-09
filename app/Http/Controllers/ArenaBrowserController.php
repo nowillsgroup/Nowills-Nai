@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 /**
- * The Arena AI browser: the real Arena AI site framed inside the NAi shell.
+ * The NAi browser: an external site framed inside the NAi shell.
  *
  * NAi keeps its own branding and side navigation around the frame. The frame
- * talks to Arena AI directly from the browser, so Arena AI credentials are
- * never seen, stored, proxied, or replayed by NAi.
+ * talks to the framed site directly from the browser, so its credentials
+ * are never seen, stored, proxied, or replayed by NAi.
  */
 class ArenaBrowserController extends Controller
 {
@@ -25,7 +25,7 @@ class ArenaBrowserController extends Controller
     }
 
     /**
-     * Ask Arena AI whether it is willing to be framed. Some sites send
+     * Ask the framed site whether it is willing to be embedded. Some sites send
      * X-Frame-Options / CSP frame-ancestors that make a browser refuse the
      * embed; when that happens the view offers a normal browser tab instead.
      * The answer is cached and never blocks the page from rendering.
@@ -45,10 +45,10 @@ class ArenaBrowserController extends Controller
                 $xfo = strtolower(trim((string) $response->header('X-Frame-Options')));
                 if ($xfo !== '') {
                     if (str_starts_with($xfo, 'deny')) {
-                        return ['status' => 'blocked', 'reason' => 'Arena AI sent X-Frame-Options: DENY.'];
+                        return ['status' => 'blocked', 'reason' => 'The site sent X-Frame-Options: DENY.'];
                     }
                     if (str_starts_with($xfo, 'sameorigin')) {
-                        return ['status' => 'blocked', 'reason' => 'Arena AI sent X-Frame-Options: SAMEORIGIN.'];
+                        return ['status' => 'blocked', 'reason' => 'The site sent X-Frame-Options: SAMEORIGIN.'];
                     }
                     if (str_starts_with($xfo, 'allow-from')) {
                         $allowed = strtolower(trim(substr($xfo, strlen('allow-from'))));
@@ -56,7 +56,7 @@ class ArenaBrowserController extends Controller
 
                         return $allowedHost !== '' && $allowedHost === $naiHost
                             ? ['status' => 'allowed', 'reason' => '']
-                            : ['status' => 'blocked', 'reason' => 'Arena AI only allows framing from '.$allowed.'.'];
+                            : ['status' => 'blocked', 'reason' => 'The site only allows framing from '.$allowed.'.'];
                     }
                 }
 
@@ -64,7 +64,7 @@ class ArenaBrowserController extends Controller
                     if (! preg_match('/frame-ancestors\s+([^;]+)/i', (string) $csp, $m)) continue;
                     $sources = preg_split('/\s+/', trim(strtolower($m[1]))) ?: [];
                     if (in_array("'none'", $sources, true)) {
-                        return ['status' => 'blocked', 'reason' => "Arena AI sent CSP frame-ancestors 'none'."];
+                        return ['status' => 'blocked', 'reason' => "The site sent CSP frame-ancestors 'none'."];
                     }
                     foreach ($sources as $source) {
                         if ($source === '*') return ['status' => 'allowed', 'reason' => ''];
@@ -76,7 +76,7 @@ class ArenaBrowserController extends Controller
                         }
                     }
 
-                    return ['status' => 'blocked', 'reason' => 'Arena AI sent a CSP frame-ancestors list that does not include this workspace.'];
+                    return ['status' => 'blocked', 'reason' => 'The site sent a CSP frame-ancestors list that does not include this workspace.'];
                 }
 
                 return ['status' => 'allowed', 'reason' => ''];
