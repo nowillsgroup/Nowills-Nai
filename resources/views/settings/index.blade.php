@@ -3,8 +3,9 @@
 <div class="settings-grid">
 <form method="POST" action="{{ route('settings.update') }}" class="grid" style="gap:18px">@csrf @method('PUT')
 <div class="card"><div class="card-head"><h3>Workspace</h3></div><div class="field"><label>Workspace name</label><input class="input" name="workspace_name" value="{{ old('workspace_name',$workspace) }}" required></div></div>
-<div class="card"><div class="card-head"><h3>Arena AI workspace</h3></div>
-<div class="notice"><x-icon name="sparkles" :size="16" /><span>The “Arena AI” button opens the NAi engine workspace directly in this tab. NAi does not embed, proxy, or rebrand an external Arena.ai sign-in.</span></div>
+<div class="card"><div class="card-head"><h3>Arena AI browser</h3></div>
+<div class="notice"><x-icon name="globe" :size="16" /><span>The “Arena AI” button opens this address in a full-height browser frame inside NAi, keeping NAi branding and side navigation around it. Sign-in happens on Arena AI itself; NAi never sees or stores those credentials.</span></div>
+<div class="field"><label>Arena AI address</label><input class="input" type="url" name="arena_portal_url" value="{{ old('arena_portal_url', \App\Models\Setting::where('key','arena_portal_url')->value('value') ?? config('nai.arena.portal_url')) }}" placeholder="https://arena.ai"><div class="help">Absolute http(s) URL. If Arena AI refuses to be framed, the browser view offers “Open in tab” instead.</div></div>
 </div>
 <div class="card"><div class="card-head"><h3>NAi connection</h3><x-badge :status="$arenaStatus" /></div>
 <div class="notice"><x-icon name="cpu" :size="16" /><span>NAi is an interface and orchestration layer. Enter the approved NAi API endpoint or bridge for your NAi deployment. NAi does not run a model.</span></div>

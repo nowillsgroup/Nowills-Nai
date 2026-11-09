@@ -31,7 +31,8 @@
 - **Team & roles** — admin, operator, viewer; role-based access control.
 - **Audit trail** — inventory changes, project/task changes, auth events, settings changes, and NAi interactions.
 - **In-app notifications** — topbar bell with unread badge plus a notifications inbox; incident open/recovery alerts go to admins and operators, task assignments notify the assignee, and completions notify the project owner. Per-user read state, mark-all-read, and retention pruning alongside monitoring history.
-- **Arena AI workspace launcher** — a prominent "Arena AI" button (topbar and sidebar) opens the NAi engine workspace at `/arena` directly in the same tab. NAi does not embed, proxy, or rebrand an external Arena.ai sign-in.
+- **Arena AI browser** — a prominent "Arena AI" button (topbar and sidebar) opens `/arena/browser`: the real Arena AI site in a full-height frame with NAi branding and side navigation around it, plus address bar, back/forward/reload/home, focus mode, and fullscreen. Sign-in happens on Arena AI itself — NAi never sees, stores, or proxies those credentials. If Arena AI refuses to be framed (`X-Frame-Options` / CSP `frame-ancestors`), the view explains why and offers "Open in tab". Admins can change the framed address in Settings (`ARENA_PORTAL_URL`, http(s)-only).
+- **NAi engine workspace** — the separate `/arena` orchestration workspace for scoped conversations and playbooks against your configured upstream engine.
 - **Exports & backup** — CSV exports for inventory, activity, and monitoring history, plus a versioned, secret-free JSON workspace backup.
 - **Safe workspace import** — admin-only upload → validation → change plan → explicit confirmation; additive merge with ID remapping, conflict blocking, transactional apply, and no imported credentials, users, conversations, or historical health.
 - **Security headers** — CSP, nosniff, referrer policy, permissions policy; secure-cookie support for production.

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ArenaBrowserController;
 use App\Http\Controllers\ArenaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
@@ -46,6 +47,8 @@ Route::middleware([\App\Http\Middleware\PreviewDemoEntry::class, 'auth'])->group
     Route::get('/activity/export', [ExportController::class, 'activity'])->name('activity.export');
 
     Route::get('/arena', [ArenaController::class, 'index'])->name('arena.index');
+    Route::get('/arena/browser', [ArenaBrowserController::class, 'index'])->name('arena.browser');
+    Route::get('/arena/browser/probe', [ArenaBrowserController::class, 'probe'])->middleware('throttle:30,1')->name('arena.browser.probe');
     Route::get('/arena/start/{type}/{id}', [ArenaController::class, 'start'])->whereIn('type', ['applications', 'repositories', 'databases', 'infrastructure', 'projects'])->name('arena.start');
     Route::post('/arena/messages/{message}/task', [ArenaController::class, 'createTask'])->middleware('can:write')->name('arena.task');
     Route::post('/arena/conversations', [ArenaController::class, 'store'])->middleware('can:write')->name('arena.store');

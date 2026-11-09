@@ -23,6 +23,9 @@ return [
     ],
 
     'arena' => [
+        // Arena AI address framed by the NAi browser view. The frame connects
+        // straight from the user's browser; NAi never handles its credentials.
+        'portal_url' => env('ARENA_PORTAL_URL', 'https://arena.ai'),
         'base_url' => env('ARENA_BASE_URL', ''),
         'api_key' => env('ARENA_API_KEY', ''),
         'workspace_ref' => env('ARENA_WORKSPACE_REF', ''),

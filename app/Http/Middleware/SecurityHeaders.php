@@ -17,7 +17,11 @@ class SecurityHeaders
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
         // NAi serves all assets locally. Inline style attributes are used by the design system.
         // frame-ancestors is intentionally omitted so the platform can be embedded in approved consoles.
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'");
+        // The Arena AI browser view is a real embedded browser: its address bar and
+        // Arena AI's own sign-in redirects may move between https origins, so https
+        // frames are allowed while javascript:/data:/http frames stay blocked.
+        $frameSrc = "'self' ".\App\Support\ArenaPortal::origin()." https:";
+        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src {$frameSrc}; base-uri 'self'; form-action 'self'");
 
         return $response;
     }

@@ -22,10 +22,9 @@ class ArenaLauncherTest extends TestCase
             $this->actingAs($user)->get('/dashboard')
                 ->assertOk()
                 ->assertSee('arena-launch', false)
-                ->assertSee('href="'.route('arena.index').'"', false)
+                ->assertSee('href="'.route('arena.browser').'"', false)
                 ->assertSee('nav-arena', false)
-                ->assertDontSee('target="_blank"', false)
-                ->assertDontSee('https://arena.ai', false);
+                ->assertDontSee('target="_blank"', false);
         }
     }
 
@@ -36,17 +35,15 @@ class ArenaLauncherTest extends TestCase
             ->assertSee('Build with')
             ->assertSee('arenaFirstPrompt')
             ->assertSee('Start conversation')
-            ->assertDontSee('Launch Arena AI')
-            ->assertDontSee('https://arena.ai', false);
+            ->assertDontSee('Launch Arena AI');
     }
 
-    public function test_settings_no_longer_exposes_an_external_portal_url(): void
+    public function test_settings_exposes_the_frame_address(): void
     {
         $this->actingAs($this->user())->get('/settings')
             ->assertOk()
-            ->assertSee('Arena AI workspace')
-            ->assertDontSee('name="arena_portal_url"', false)
-            ->assertDontSee('https://arena.ai', false);
+            ->assertSee('Arena AI browser')
+            ->assertSee('name="arena_portal_url"', false);
     }
 
     public function test_non_admin_cannot_update_workspace_settings(): void

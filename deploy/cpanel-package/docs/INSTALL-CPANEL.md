@@ -108,7 +108,7 @@ The installer then:
 7. writes `storage/app/installed.lock`;
 8. removes `install.php`, `public/install.php`, `SETUP-TOKEN.txt`, and `build/installer-config.php`.
 
-Demo mode and preview auto-login are **off**. The Arena AI button opens the internal NAi engine workspace at `/arena`; the machine engine connection remains disconnected until an administrator configures a real endpoint.
+Demo mode and preview auto-login are **off**. The Arena AI button opens `/arena/browser`, which frames the real `https://arena.ai` inside the NAi shell; the machine engine connection at `/arena` remains disconnected until an administrator configures a real endpoint.
 
 ## 7. Delete the installer
 
