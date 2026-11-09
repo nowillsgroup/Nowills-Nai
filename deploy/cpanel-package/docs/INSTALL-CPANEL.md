@@ -158,6 +158,32 @@ The schedule runs monitoring when enabled, prunes old monitoring history, prunes
 - **Cleanup failed:** remove the three files listed above manually; the installed lock remains authoritative.
 - **Updating an installed site:** this one-time installer is not an update tool. Preserve `.env`, `storage/`, and the database. Deploy application updates through the normal Git/cPanel deploy path or a maintenance release, then run migrations with the host’s PHP CLI. Do not re-extract a fresh installer over a live site.
 
+## Updating an existing install
+
+Upload the new files over the old ones. CSS and JS URLs carry a content-derived
+`?v=` version, so browsers and any proxy/CDN pick up the new stylesheet on the
+next request without a manual cache purge.
+
+The browser view's layout ships in its own `public/css/arena-browser.css`. Make
+sure that file is uploaded alongside `public/css/nai.css`; without it the frame
+collapses to a small box and the address bar renders unstyled.
+
+If a page still looks unstyled after an update, clear the compiled views:
+
+```
+php artisan view:clear
+```
+
+or delete the contents of `storage/framework/views/` via cPanel File Manager.
+
+### The browser says the site "won't run inside a frame"
+
+That is the destination site's own `X-Frame-Options` / CSP `frame-ancestors`
+policy, enforced by your visitor's browser. NAi cannot override it and will not
+proxy the site to strip those headers, because that would put your password in
+NAi's path. Use **Open in tab**, or point Settings -> Browser start address at a
+site that permits embedding.
+
 ## Troubleshooting
 
 | Symptom | Check |

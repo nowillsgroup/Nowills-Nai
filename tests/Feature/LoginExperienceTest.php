@@ -46,12 +46,16 @@ class LoginExperienceTest extends TestCase
         // The Arena preview panel terminates TLS at a proxy; PHP may only see
         // an internal HTTP host. Assets must not inherit that internal origin.
         $response = $this->get('/login')->assertOk();
-        $response->assertSee('href="/css/nai.css"', false)
-            ->assertSee('src="/js/login.js"', false)
-            ->assertSee('src="/images/nai-logo.png"', false)
+        $content = $response->getContent();
+
+        // CSS/JS carry a content-derived ?v= cache-buster so a redeploy cannot
+        // serve a stale stylesheet against new markup. The origin must still be
+        // a relative same-origin path.
+        $this->assertMatchesRegularExpression('#href="/css/nai\.css\?v=[a-f0-9]+"#', $content);
+        $this->assertMatchesRegularExpression('#src="/js/login\.js\?v=[a-f0-9]+"#', $content);
+        $response->assertSee('src="/images/nai-logo.png"', false)
             ->assertSee('href="/images/favicon.png"', false);
 
-        $content = $response->getContent();
         $this->assertDoesNotMatchRegularExpression(
             '/(?:href|src)="https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/(?:css|js|images|fonts)\//',
             $content

@@ -11,6 +11,9 @@
   const address = document.getElementById('browserAddress');
   const form = document.getElementById('browserAddressForm');
   const loading = document.getElementById('browserLoading');
+  const blocked = document.getElementById('browserBlocked');
+  const blockedReason = document.getElementById('browserBlockedReason');
+  const blockedOpen = document.getElementById('browserBlockedOpen');
   const hint = document.getElementById('browserHint');
   const hintText = document.getElementById('browserHintText');
   const hintLink = document.getElementById('browserHintLink');
@@ -18,12 +21,14 @@
   const backBtn = document.getElementById('browserBack');
   const forwardBtn = document.getElementById('browserForward');
   const home = root.dataset.home;
+  const probeUrl = root.dataset.probe;
 
   // History of addresses NAi itself navigated to. A cross-origin frame does not
   // expose its internal history, so back/forward walk this list only.
   const stack = [home];
   let cursor = 0;
   let loadTimer = null;
+  let probeToken = 0;
 
   function setHint(text, tone) {
     if (!hint) return;
@@ -39,6 +44,13 @@
     address.value = url;
     openTab.href = url;
     if (hintLink) hintLink.href = url;
+    if (blockedOpen) {
+      blockedOpen.href = url;
+      const label = blockedOpen.querySelector('span');
+      let host = url;
+      try { host = new URL(url).host; } catch (e) {}
+      if (label) label.textContent = 'Open ' + host + ' in a tab';
+    }
   }
 
   function showLoading() {
@@ -46,24 +58,82 @@
     clearTimeout(loadTimer);
     loadTimer = setTimeout(function () {
       if (loading) loading.hidden = true;
-      setHint('This page is taking a while to appear. It may be blocking embedding — “Open in tab” always works.', 'warn');
+      setHint('This page is taking a while to appear. It may be blocking embedding, or your browser may be blocking third-party cookies — “Open in tab” always works.', 'warn');
     }, 12000);
   }
 
-  function navigate(url, addToHistory) {
+  function hideLoading() {
+    clearTimeout(loadTimer);
+    if (loading) loading.hidden = true;
+  }
+
+  function showBlocked(reason) {
+    hideLoading();
+    if (blockedReason) blockedReason.textContent = reason || 'This site refuses to be embedded in another site.';
+    if (blocked) blocked.hidden = false;
+    // Drop the src so the browser's broken-page icon is never what the user sees.
+    frame.removeAttribute('src');
+    setHint((reason || 'This site refuses to be embedded.') + ' Browsers enforce this, so NAi cannot override it — use “Open in tab” to sign in and work.', 'warn');
+  }
+
+  function clearBlocked() {
+    if (blocked) blocked.hidden = true;
+  }
+
+  // Render the frame for a URL we believe is embeddable.
+  function loadFrame(url) {
+    clearBlocked();
     showLoading();
     frame.src = url;
+  }
+
+  function navigate(url, addToHistory) {
     if (addToHistory !== false) {
       stack.splice(cursor + 1);
       stack.push(url);
       cursor = stack.length - 1;
     }
     syncButtons();
+    check(url, { load: true });
+  }
+
+  // Ask the server whether the destination allows framing. `load` decides if an
+  // embeddable answer should actually render the frame.
+  function check(url, opts) {
+    opts = opts || {};
+    if (!probeUrl) { if (opts.load) loadFrame(url); return; }
+
+    const token = ++probeToken;
+    if (opts.load) showLoading();
+
+    const qs = '?url=' + encodeURIComponent(url) + (opts.recheck ? '&recheck=1' : '');
+    fetch(probeUrl + qs, { headers: { Accept: 'application/json' } })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (data) {
+        if (token !== probeToken) return; // a newer navigation won
+        if (!data) { if (opts.load) loadFrame(url); return; }
+
+        if (data.status === 'blocked') {
+          showBlocked(data.reason);
+          return;
+        }
+        if (data.status === 'allowed') {
+          setHint('Loading inside NAi. Sign in on the framed page itself — NAi never sees your credentials.', 'ok');
+        }
+        // 'unknown' (offline/timeout) still attempts the frame: the browser is
+        // the final authority and the load timeout explains a blank panel.
+        if (opts.load) loadFrame(data.final_url || url);
+      })
+      .catch(function () {
+        if (token !== probeToken) return;
+        if (opts.load) loadFrame(url);
+      });
   }
 
   frame.addEventListener('load', function () {
-    clearTimeout(loadTimer);
-    if (loading) loading.hidden = true;
+    // A frame with no src fires load in some browsers; ignore those.
+    if (!frame.getAttribute('src')) return;
+    hideLoading();
   });
 
   form.addEventListener('submit', function (e) {
@@ -93,11 +163,26 @@
   });
 
   document.getElementById('browserReload').addEventListener('click', function () {
-    navigate(stack[cursor], false);
+    check(stack[cursor], { load: true, recheck: true });
   });
 
   document.getElementById('browserHome').addEventListener('click', function () {
     navigate(home);
+  });
+
+  const retryBtn = document.getElementById('browserBlockedRetry');
+  if (retryBtn) retryBtn.addEventListener('click', function () {
+    retryBtn.disabled = true;
+    check(stack[cursor], { load: true, recheck: true });
+    setTimeout(function () { retryBtn.disabled = false; }, 1500);
+  });
+
+  // Escape hatch: the probe can be wrong (HEAD blocked, GET differs, bot wall).
+  // Let the user attempt the embed and see the browser's own verdict.
+  const forceBtn = document.getElementById('browserBlockedForce');
+  if (forceBtn) forceBtn.addEventListener('click', function () {
+    setHint('Trying the frame anyway. If it stays blank, the refusal is real — “Open in tab” always works.', 'info');
+    loadFrame(stack[cursor]);
   });
 
   const focusBtn = document.getElementById('browserFocus');
@@ -125,22 +210,13 @@
   const hintClose = document.getElementById('browserHintClose');
   if (hintClose) hintClose.addEventListener('click', function () { hint.hidden = true; });
 
-  // Ask the server whether the site is willing to be framed, so a refusal is
-  // explained instead of leaving an empty panel.
-  if (root.dataset.probe) {
-    fetch(root.dataset.probe, { headers: { Accept: 'application/json' } })
-      .then(function (res) { return res.ok ? res.json() : null; })
-      .then(function (data) {
-        if (!data) return;
-        if (data.status === 'blocked') {
-          setHint((data.reason || 'This site refuses to be embedded.') + ' Use “Open in tab” to sign in and work — it stays one click away while NAi keeps your workspace around it.', 'warn');
-        } else if (data.status === 'allowed') {
-          setHint('Loading inside NAi. Sign in on the framed page itself — NAi never sees your credentials.', 'ok');
-        }
-      })
-      .catch(function () { /* offline or blocked: the default hint stays */ });
-  }
-
   syncButtons();
-  showLoading();
+
+  // The server already probed before first paint. Only start the spinner when a
+  // frame is actually loading; a known refusal must not show a loading state.
+  if (root.dataset.status === 'blocked') {
+    hideLoading();
+  } else {
+    showLoading();
+  }
 })();

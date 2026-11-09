@@ -106,7 +106,8 @@ printf '[NAi package] Validating release\n'
 "$PHP_BIN" -l app/Support/WebInstaller.php >/dev/null
 for required in .htaccess install.php START-HERE.txt README.md SETUP-TOKEN.txt build/installer-config.php \
                 build/vendor/autoload.php public/install.php public/index.php public/.htaccess \
-                public/uploads/.htaccess docs/INSTALL-CPANEL.md docs/MODULES.md artisan composer.lock; do
+                public/uploads/.htaccess public/css/nai.css public/css/arena-browser.css \
+                public/js/arena-browser.js docs/INSTALL-CPANEL.md docs/MODULES.md artisan composer.lock; do
   [[ -f "$required" ]] || { echo "Missing release file: $required" >&2; exit 1; }
 done
 if find "$STAGE" -type f \( -name '.env' -o -name '*.sqlite' -o -name '*.sqlite3' -o -name '*.log' \) | grep -q .; then

@@ -78,5 +78,5 @@
     </section>
 </div>
 @endif
-@push('scripts')<script src="{{ asset('js/import.js') }}"></script>@endpush
+@push('scripts')<script src="{{ \App\Support\AssetVersion::url('js/import.js') }}"></script>@endpush
 </x-layout>

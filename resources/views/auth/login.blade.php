@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link rel="preload" href="{{ asset('fonts/Inter-Regular.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{{ asset('fonts/Inter-SemiBold.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="{{ asset('css/nai.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\AssetVersion::url('css/nai.css') }}">
 </head>
 <body>
 <div class="login-shell">
@@ -111,6 +111,6 @@
         </div>
     </section>
 </div>
-<script src="{{ asset('js/login.js') }}" defer></script>
+<script src="{{ \App\Support\AssetVersion::url('js/login.js') }}" defer></script>
 </body>
 </html>

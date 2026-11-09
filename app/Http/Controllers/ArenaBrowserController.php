@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Support\ArenaPortal;
+use App\Support\FrameProbe;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 /**
  * The NAi browser: an external site framed inside the NAi shell.
@@ -16,74 +16,57 @@ use Illuminate\Support\Facades\Http;
  */
 class ArenaBrowserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $url = ArenaPortal::url();
+
+        // Probe server-side so the very first paint already knows whether the
+        // frame can work. Previously this ran only from JS after the iframe had
+        // started loading, so a refusal showed the browser's broken-page icon
+        // for a moment (or forever, if the probe request itself failed).
+        $probe = FrameProbe::check($url, $request->boolean('recheck'));
+
         return view('arena.browser', [
-            'portalUrl' => ArenaPortal::url(),
+            'portalUrl' => $url,
             'portalHost' => ArenaPortal::host(),
+            'probe' => $probe,
         ]);
     }
 
     /**
-     * Ask the framed site whether it is willing to be embedded. Some sites send
-     * X-Frame-Options / CSP frame-ancestors that make a browser refuse the
-     * embed; when that happens the view offers a normal browser tab instead.
-     * The answer is cached and never blocks the page from rendering.
+     * Ask whether a site is willing to be framed. Accepts an optional ?url= so
+     * the address bar can check a destination before loading it; the target is
+     * validated against private/internal networks inside FrameProbe.
      */
-    public function probe(): JsonResponse
+    public function probe(Request $request): JsonResponse
     {
-        $url = ArenaPortal::url();
-        $naiHost = strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+        $data = $request->validate([
+            'url' => ['nullable', 'string', 'max:500'],
+        ]);
 
-        $result = Cache::remember('nai.arena.frame-probe.'.md5($url.'|'.$naiHost), 600, function () use ($url, $naiHost): array {
-            try {
-                $response = Http::timeout(4)->withHeaders(['User-Agent' => 'NAi-Workspace/1.0'])->head($url);
-                if (in_array($response->status(), [405, 501], true)) {
-                    $response = Http::timeout(4)->withHeaders(['User-Agent' => 'NAi-Workspace/1.0'])->get($url);
-                }
+        $supplied = trim((string) ($data['url'] ?? ''));
 
-                $xfo = strtolower(trim((string) $response->header('X-Frame-Options')));
-                if ($xfo !== '') {
-                    if (str_starts_with($xfo, 'deny')) {
-                        return ['status' => 'blocked', 'reason' => 'The site sent X-Frame-Options: DENY.'];
-                    }
-                    if (str_starts_with($xfo, 'sameorigin')) {
-                        return ['status' => 'blocked', 'reason' => 'The site sent X-Frame-Options: SAMEORIGIN.'];
-                    }
-                    if (str_starts_with($xfo, 'allow-from')) {
-                        $allowed = strtolower(trim(substr($xfo, strlen('allow-from'))));
-                        $allowedHost = strtolower((string) parse_url($allowed, PHP_URL_HOST));
+        // Only fall back to the configured start address when nothing was asked
+        // for. An explicitly supplied but invalid address must be refused, not
+        // silently swapped for the default -- that would probe a host the caller
+        // never named and report its reachability back as if it were the answer.
+        $url = $supplied === ''
+            ? ArenaPortal::url()
+            : (ArenaPortal::sanitize($supplied) ?? $supplied);
 
-                        return $allowedHost !== '' && $allowedHost === $naiHost
-                            ? ['status' => 'allowed', 'reason' => '']
-                            : ['status' => 'blocked', 'reason' => 'The site only allows framing from '.$allowed.'.'];
-                    }
-                }
+        // An address the user typed is never probed if it points at something
+        // internal or is not a public http(s) URL; report it as unknown rather
+        // than leaking reachability.
+        if (! FrameProbe::isSafeTarget($url)) {
+            return response()->json([
+                'status' => 'unknown',
+                'reason' => '',
+                'url' => $supplied === '' ? ArenaPortal::url() : $supplied,
+                'final_url' => '',
+            ]);
+        }
 
-                foreach ((array) $response->header('Content-Security-Policy') as $csp) {
-                    if (! preg_match('/frame-ancestors\s+([^;]+)/i', (string) $csp, $m)) continue;
-                    $sources = preg_split('/\s+/', trim(strtolower($m[1]))) ?: [];
-                    if (in_array("'none'", $sources, true)) {
-                        return ['status' => 'blocked', 'reason' => "The site sent CSP frame-ancestors 'none'."];
-                    }
-                    foreach ($sources as $source) {
-                        if ($source === '*') return ['status' => 'allowed', 'reason' => ''];
-                        if ($source === "'self'") continue;
-                        $host = strtolower((string) (parse_url($source, PHP_URL_HOST) ?: $source));
-                        $host = preg_replace('/^\*\./', '', $host) ?? $host;
-                        if ($naiHost !== '' && ($host === $naiHost || str_ends_with($naiHost, '.'.$host))) {
-                            return ['status' => 'allowed', 'reason' => ''];
-                        }
-                    }
-
-                    return ['status' => 'blocked', 'reason' => 'The site sent a CSP frame-ancestors list that does not include this workspace.'];
-                }
-
-                return ['status' => 'allowed', 'reason' => ''];
-            } catch (\Throwable) {
-                return ['status' => 'unknown', 'reason' => ''];
-            }
-        });
+        $result = FrameProbe::check($url, $request->boolean('recheck'));
 
         return response()->json($result + ['url' => $url]);
     }

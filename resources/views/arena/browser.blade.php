@@ -1,7 +1,8 @@
 <x-layout title="NAi" subtitle="NAi browser workspace" :fluid="true">
 <div class="browser" id="arenaBrowser"
      data-home="{{ $portalUrl }}"
-     data-probe="{{ route('arena.browser.probe', [], false) }}">
+     data-probe="{{ route('arena.browser.probe', [], false) }}"
+     data-status="{{ $probe['status'] }}">
 
     <div class="browser-chrome">
         <div class="browser-tabstrip">
@@ -31,9 +32,9 @@
         </div>
     </div>
 
-    <div class="browser-hint" id="browserHint" data-tone="info">
+    <div class="browser-hint" id="browserHint" data-tone="{{ $probe['status'] === 'blocked' ? 'warn' : ($probe['status'] === 'allowed' ? 'ok' : 'info') }}">
         <x-icon name="alert" :size="14" />
-        <span id="browserHintText">Loading inside NAi. If the panel stays blank, the site is refusing to be embedded or your browser is blocking third-party cookies — use “Open in tab” to sign in.</span>
+        <span id="browserHintText">@if($probe['status'] === 'blocked'){{ $probe['reason'] }} Browsers enforce this, so NAi cannot override it — use “Open in tab” to sign in and work.@elseif($probe['status'] === 'allowed')Loading inside NAi. Sign in on the framed page itself — NAi never sees your credentials.@elseLoading inside NAi. If the panel stays blank, the site is refusing to be embedded or your browser is blocking third-party cookies — use “Open in tab” to sign in.@endif</span>
         <a href="{{ $portalUrl }}" target="_blank" rel="noopener noreferrer" class="browser-hint-link" id="browserHintLink">Open in tab</a>
         <button type="button" class="browser-hint-close" id="browserHintClose" aria-label="Dismiss notice"><x-icon name="x" :size="13" /></button>
     </div>
@@ -41,18 +42,38 @@
     <div class="browser-stage" id="browserStage">
         <iframe id="arenaFrame"
                 class="browser-frame"
-                src="{{ $portalUrl }}"
+                @if($probe['status'] !== 'blocked') src="{{ $probe['final_url'] ?: $portalUrl }}" @endif
                 title="NAi browser"
                 referrerpolicy="strict-origin-when-cross-origin"
                 allow="clipboard-write; fullscreen"
                 sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals"></iframe>
-        <div class="browser-loading" id="browserLoading"><span class="browser-spinner"></span>Opening {{ $portalHost }}…</div>
+        <div class="browser-loading" id="browserLoading" @if($probe['status'] === 'blocked') hidden @endif><span class="browser-spinner"></span>Opening {{ $portalHost }}…</div>
+
+        {{-- A refusal is a real answer, not a broken frame. Show why, and give a
+             working way forward instead of the browser's broken-page icon. --}}
+        <div class="browser-blocked" id="browserBlocked" @if($probe['status'] !== 'blocked') hidden @endif>
+            <div class="browser-blocked-card">
+                <span class="browser-blocked-icon"><x-icon name="shield" :size="26" /></span>
+                <h2>{{ $portalHost }} won’t run inside a frame</h2>
+                <p id="browserBlockedReason">{{ $probe['reason'] ?: 'This site refuses to be embedded in another site.' }}</p>
+                <p class="browser-blocked-note">This is the site’s own security policy, enforced by your browser. NAi can’t switch it off, and won’t route your password through a proxy to get around it.</p>
+                <div class="browser-blocked-actions">
+                    <a href="{{ $portalUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" id="browserBlockedOpen"><x-icon name="external" :size="15" /><span>Open {{ $portalHost }} in a tab</span></a>
+                    <button type="button" class="btn" id="browserBlockedRetry"><x-icon name="refresh" :size="15" /><span>Check again</span></button>
+                    <button type="button" class="btn" id="browserBlockedForce"><x-icon name="eye" :size="15" /><span>Try framing anyway</span></button>
+                </div>
+                <p class="browser-blocked-foot">Sign in there, then keep NAi open alongside it. Your workspace, engines and notifications stay right here.</p>
+            </div>
+        </div>
     </div>
 </div>
 
 <button type="button" class="browser-exit-focus" id="browserExitFocus"><x-icon name="x" :size="14" />Exit focus mode</button>
 
+@push('styles')
+<link rel="stylesheet" href="{{ \App\Support\AssetVersion::url('css/arena-browser.css') }}">
+@endpush
 @push('scripts')
-<script src="{{ asset('js/arena-browser.js') }}"></script>
+<script src="{{ \App\Support\AssetVersion::url('js/arena-browser.js') }}"></script>
 @endpush
 </x-layout>

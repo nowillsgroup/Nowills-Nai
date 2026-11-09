@@ -11,7 +11,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title === 'NAi' ? 'NAi' : $title.' · NAi' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
-    <link rel="stylesheet" href="{{ asset('css/nai.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\AssetVersion::url('css/nai.css') }}">
+    @stack('styles')
 </head>
 <body class="{{ $fluid ? 'fluid-page' : '' }}">
 <div class="app-shell">
@@ -97,7 +98,7 @@
         <div class="search-results" id="searchResults"><div class="search-empty">Type at least two characters to search the workspace.</div></div>
     </div>
 </div>
-<script src="{{ asset('js/nai.js') }}"></script>
+<script src="{{ \App\Support\AssetVersion::url('js/nai.js') }}"></script>
 @stack('scripts')
 </body>
 </html>

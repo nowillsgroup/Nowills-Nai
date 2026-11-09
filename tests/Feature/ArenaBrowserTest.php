@@ -146,4 +146,132 @@ class ArenaBrowserTest extends TestCase
         $this->get('/up')->assertOk();
         $this->assertSame('https://arena.ai', ArenaPortal::url());
     }
+
+    /**
+     * The browser layout must not live in nai.css. A visitor holding a cached
+     * copy of nai.css from a previous release would get new markup with none of
+     * the browser rules, collapsing the frame to the 300x150 iframe default and
+     * leaving the address bar and focus button unstyled.
+     */
+    public function test_browser_layout_ships_in_its_own_cache_busted_stylesheet(): void
+    {
+        $content = $this->actingAs($this->user())->get('/arena/browser')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('#href="/css/nai\.css\?v=[a-f0-9]+"#', $content);
+        $this->assertMatchesRegularExpression('#href="/css/arena-browser\.css\?v=[a-f0-9]+"#', $content);
+        $this->assertMatchesRegularExpression('#src="/js/arena-browser\.js\?v=[a-f0-9]+"#', $content);
+
+        // The layout rules really are in the dedicated file, not the shared one.
+        $browserCss = file_get_contents(public_path('css/arena-browser.css'));
+        $sharedCss = file_get_contents(public_path('css/nai.css'));
+        foreach (['.browser-chrome', '.browser-frame', '.browser-exit-focus', 'body.fluid-page', '.content-fluid'] as $rule) {
+            $this->assertStringContainsString($rule, $browserCss, $rule.' must ship in arena-browser.css');
+            $this->assertStringNotContainsString($rule, $sharedCss, $rule.' must not depend on cached nai.css');
+        }
+    }
+
+    public function test_asset_version_changes_when_the_file_changes(): void
+    {
+        $path = 'css/arena-browser.css';
+        $file = public_path($path);
+        $original = file_get_contents($file);
+        $before = \App\Support\AssetVersion::url($path);
+
+        try {
+            file_put_contents($file, $original."\n/* version probe */\n");
+            touch($file, time() + 5);
+            clearstatcache();
+            $after = \App\Support\AssetVersion::url($path);
+            $this->assertNotSame($before, $after, 'A changed asset must produce a new URL so caches are bypassed.');
+        } finally {
+            file_put_contents($file, $original);
+            clearstatcache();
+        }
+    }
+
+    /**
+     * A refusal must be explained on first paint, with a way forward -- never a
+     * broken-page icon inside a dead frame.
+     */
+    public function test_refused_site_renders_an_explanation_instead_of_a_dead_frame(): void
+    {
+        Http::fake(['*' => Http::response('', 200, ['X-Frame-Options' => 'SAMEORIGIN'])]);
+
+        $response = $this->actingAs($this->user())->get('/arena/browser')->assertOk();
+        $response->assertSee('id="browserBlocked"', false)
+            ->assertSee('won’t run inside a frame', false)
+            ->assertSee('X-Frame-Options: SAMEORIGIN', false)
+            ->assertSee('id="browserBlockedOpen"', false)
+            ->assertSee('Check again', false)
+            ->assertSee('data-status="blocked"', false);
+
+        // The doomed iframe must not be given a src, and the spinner must be off.
+        $this->assertDoesNotMatchRegularExpression('/id="arenaFrame"[^>]*\ssrc=/', $response->getContent());
+    }
+
+    public function test_allowed_site_gets_a_frame_src_on_first_paint(): void
+    {
+        Http::fake(['*' => Http::response('', 200)]);
+
+        $response = $this->actingAs($this->user())->get('/arena/browser')->assertOk();
+        $this->assertMatchesRegularExpression('/id="arenaFrame"[^>]*\ssrc="https:\/\/arena\.ai"/', $response->getContent());
+        $response->assertSee('data-status="allowed"', false);
+    }
+
+    public function test_probe_accepts_a_destination_from_the_address_bar(): void
+    {
+        Http::fake(['*' => Http::response('', 200, ['X-Frame-Options' => 'DENY'])]);
+
+        $this->actingAs($this->user())->getJson('/arena/browser/probe?url=https%3A%2F%2Fexample.com%2Fdocs')
+            ->assertOk()
+            ->assertJsonPath('status', 'blocked')
+            ->assertJsonPath('url', 'https://example.com/docs');
+    }
+
+    /**
+     * The probe is an outbound server-side request. Without a guard any signed-in
+     * user could aim it at localhost or cloud metadata and read back reachability.
+     */
+    public function test_probe_refuses_to_scan_internal_networks(): void
+    {
+        Http::fake(['*' => Http::response('', 200)]);
+        $this->actingAs($this->user());
+
+        foreach ([
+            'http://127.0.0.1/admin',
+            'http://localhost:8080/',
+            'http://10.0.0.5/',
+            'http://192.168.1.1/',
+            'http://169.254.169.254/latest/meta-data/',
+            'http://[::1]/',
+            'file:///etc/passwd',
+        ] as $target) {
+            $this->getJson('/arena/browser/probe?url='.urlencode($target))
+                ->assertOk()
+                ->assertJsonPath('status', 'unknown');
+        }
+
+        Http::assertNothingSent();
+    }
+
+    public function test_probe_rejects_non_http_schemes_and_odd_ports(): void
+    {
+        $this->assertFalse(\App\Support\FrameProbe::isSafeTarget('ftp://example.com/'));
+        $this->assertFalse(\App\Support\FrameProbe::isSafeTarget('javascript:alert(1)'));
+        $this->assertFalse(\App\Support\FrameProbe::isSafeTarget('http://example.com:22/'));
+        $this->assertFalse(\App\Support\FrameProbe::isSafeTarget('http://metadata.internal/'));
+    }
+
+    public function test_probe_follows_redirects_and_reports_the_final_header(): void
+    {
+        Http::fake([
+            'https://example.com/start' => Http::response('', 302, ['Location' => 'https://example.com/final']),
+            '*' => Http::response('', 200, ['X-Frame-Options' => 'DENY']),
+        ]);
+
+        $this->actingAs($this->user())->getJson('/arena/browser/probe?url='.urlencode('https://example.com/start'))
+            ->assertOk()
+            ->assertJsonPath('status', 'blocked')
+            ->assertJsonPath('final_url', 'https://example.com/final');
+    }
 }
