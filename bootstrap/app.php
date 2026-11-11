@@ -28,5 +28,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: ['127.0.0.1', '::1', '169.254.0.0/16']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Never flash provider credentials to the session after validation errors.
+        $exceptions->dontFlash(['api_key']);
     })->create();

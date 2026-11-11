@@ -19,6 +19,8 @@ class SettingsController extends Controller
     {
         $data = $request->validate([
             'workspace_name' => 'required|string|max:120',
+            'provider' => 'nullable|in:bridge,openai',
+            'model' => ['nullable', 'string', 'max:120', 'regex:/\A[a-zA-Z0-9._-]+\z/'],
             'base_url' => 'nullable|url|max:500',
             'api_key' => 'nullable|string|max:1000',
             'clear_api_key' => 'nullable|boolean',
@@ -31,7 +33,11 @@ class SettingsController extends Controller
         $portal = \App\Support\ArenaPortal::sanitize($data['arena_portal_url'] ?? null);
         Setting::updateOrCreate(['key' => 'arena_portal_url'], ['value' => $portal]);
         $connection = ArenaConnection::query()->firstOrNew([]);
+        $provider = $data['provider'] ?? ($connection->provider ?: 'bridge');
+        $changedProvider = ($connection->provider ?: 'bridge') !== $provider;
         $connection->fill([
+            'provider' => $provider,
+            'model' => $data['model'] ?? $connection->model ?? ArenaGateway::DEFAULT_OPENAI_MODEL,
             'base_url' => $data['base_url'] ?? null,
             'workspace_ref' => $data['workspace_ref'] ?? null,
             'chat_path' => $data['chat_path'],
@@ -41,6 +47,7 @@ class SettingsController extends Controller
         ]);
         if ($request->boolean('clear_api_key')) $connection->api_key = null;
         elseif (filled($data['api_key'] ?? null)) $connection->api_key = $data['api_key'];
+        elseif ($changedProvider) $connection->api_key = null; // Never reuse a different provider's key.
         $connection->save();
         Audit::log('settings.updated', 'Updated workspace and NAi connection settings');
         return back()->with('success', 'Settings saved. Run a connection test to verify NAi.');

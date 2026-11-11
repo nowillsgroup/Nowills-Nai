@@ -9,7 +9,7 @@
 <div class="faint" style="font-size:12px;padding:10px">No conversations yet.</div>
 @endforelse
 </div></div>
-<div class="card" style="padding:14px"><div class="flex items-center justify-between"><strong style="font-size:12px">Engine status</strong><x-badge :status="$arenaStatus" /></div><p class="faint" style="font-size:11.5px;margin:10px 0 0">NAi forwards prompts and workspace context to NAi. No local model or simulated responses.</p>@can('write')<form method="POST" action="{{ route('arena.test') }}" class="mt-16">@csrf<button class="btn btn-sm btn-block"><x-icon name="refresh" :size="14" />Test connection</button></form>@endcan</div>
+<div class="card" style="padding:14px"><div class="flex items-center justify-between"><strong style="font-size:12px">Engine status</strong><x-badge :status="$arenaStatus" /></div><p class="faint" style="font-size:11.5px;margin:10px 0 0">NAi sends prompts and workspace context to your configured AI provider. No local model or simulated responses.</p>@can('write')<form method="POST" action="{{ route('arena.test') }}" class="mt-16">@csrf<button class="btn btn-sm btn-block"><x-icon name="refresh" :size="14" />Test connection</button></form>@endcan</div>
 </div>
 <div class="arena-main">
 @if($subject)
@@ -23,8 +23,8 @@
 <div class="arena-empty">
 <div class="arena-logo"><x-icon name="sparkles" :size="34" /></div>
 <h2>@if($subject)Ask NAi about <span class="gradient-text">{{ $subject->name }}</span>@else Build with <span class="gradient-text">NAi</span>@endif</h2>
-<p>@if($subject)Pick a playbook or write your own prompt. NAi attaches this record's operational context; NAi produces every response.@else Ask NAi to plan, review, and orchestrate development across your Nowills Group estate. NAi supplies the operational context; NAi provides the intelligence.@endif</p>
-@if(!$arenaConfigured)<div class="notice warn" style="max-width:560px"><x-icon name="alert" :size="16" /><span>NAi is not connected. @can('admin')<a href="{{ route('settings.edit') }}" style="text-decoration:underline">Configure the endpoint</a>@else Ask an administrator to configure the NAi endpoint.@endcan</span></div>@endif
+<p>@if($subject)Pick a playbook or write your own prompt. NAi sends this record's operational context to your configured AI provider.@else Ask NAi to write, explain and debug code or plan your development. Your configured AI provider generates the answers. NAi cannot access or edit your repository automatically.@endif</p>
+@if(!$arenaConfigured)<div class="notice warn" style="max-width:560px"><x-icon name="alert" :size="16" /><span>NAi is not connected. @can('admin')<a href="{{ route('settings.edit') }}" style="text-decoration:underline">Configure an AI provider</a>@else Ask an administrator to configure an AI provider.@endcan</span></div>@endif
 @if($subject && count($playbooks))
 <div class="playbook-grid">
     @foreach($playbooks as $key => $playbook)
@@ -35,16 +35,17 @@
     @endforeach
 </div>
 @elseif(!$subject)
+<div class="notice" style="max-width:560px"><span>Prompts, recent messages and workspace metadata are sent to the configured provider. Avoid sharing secrets.</span></div>
 <div class="prompt-grid">
-<button class="prompt-chip" data-prompt="Review the health of our applications and infrastructure. What should we prioritize?"><strong>Estate health review</strong>Prioritize risks across the workspace</button>
-<button class="prompt-chip" data-prompt="Create a delivery plan for the active projects, including milestones and dependencies."><strong>Project delivery plan</strong>Milestones, dependencies, and sequencing</button>
+<button class="prompt-chip" data-prompt="Help me build a Laravel feature. Start by asking what it should do, then provide the code and tests."><strong>Build a feature</strong>Plan and write Laravel code</button>
+<button class="prompt-chip" data-prompt="Help me debug this code. Ask me for the error and relevant code first."><strong>Debug my code</strong>Find the cause and suggest a fix</button>
 <button class="prompt-chip" data-prompt="Audit our database inventory and recommend a backup and resilience checklist."><strong>Database resilience</strong>Backup posture and recovery readiness</button>
 <button class="prompt-chip" data-prompt="Propose an architecture review checklist for our Laravel and MySQL applications."><strong>Architecture review</strong>Laravel + MySQL best-practice checklist</button>
 </div>
 @endif
 <form method="POST" action="{{ route('arena.store') }}" style="width:100%;max-width:560px">@csrf
     @if($subject)<input type="hidden" name="subject_type" value="{{ $subjectType }}"><input type="hidden" name="subject_id" value="{{ $subject->id }}">@endif
-    <textarea name="prompt" id="arenaFirstPrompt" class="input" placeholder="{{ $subject ? 'Ask NAi about '.$subject->name.'…' : 'Ask NAi to help with your technical estate…' }}" style="min-height:80px;margin-bottom:10px"></textarea>
+    <textarea name="prompt" id="arenaFirstPrompt" class="input" placeholder="{{ $subject ? 'Ask NAi about '.$subject->name.'…' : 'Ask NAi to write, explain or debug code…' }}" style="min-height:80px;margin-bottom:10px"></textarea>
     <button class="btn btn-primary btn-block" @disabled(!$arenaConfigured)><x-icon name="send" :size="16" />Start conversation</button>
 </form>
 </div>
@@ -79,7 +80,7 @@
     @endif
 </div></div>
 @empty
-<div class="empty"><p>Send a prompt to begin. Responses are generated by NAi only.</p></div>
+<div class="empty"><p>Send a prompt to begin. Responses are generated by your configured AI provider.</p></div>
 @endforelse
 </div>
 <div class="arena-composer">

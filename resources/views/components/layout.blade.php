@@ -51,7 +51,7 @@
             <div><strong>NAi engine</strong><span>{{ $engineStatus }}</span></div>
             <span class="status-light {{ $engineStatus === 'connected' ? 'ok' : '' }}"></span>
         </div>
-        <div class="sidebar-footer">NAi is an orchestration interface.<br>AI development is powered by NAi.</div>
+        <div class="sidebar-footer">NAi is an orchestration interface.<br>AI answers come from your configured provider.</div>
     </aside>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="main-wrap">
@@ -60,7 +60,7 @@
             <div class="topbar-title"><h1>{{ $title }}</h1>@if($subtitle)<span>{{ $subtitle }}</span>@endif</div>
             <div class="topbar-actions">
                 <button class="search-trigger" id="searchTrigger"><x-icon name="search" :size="16" /><span>Search workspace…</span><kbd>⌘K</kbd></button>
-                <a href="{{ route('arena.browser') }}" class="arena-launch" title="Open the NAi browser"><x-icon name="sparkles" :size="15" /><span>NAi</span><x-icon name="arrow-right" :size="13" /></a>
+                <a href="{{ route('arena.index') }}" class="arena-launch" title="Open the NAi coding assistant"><x-icon name="sparkles" :size="15" /><span>NAi</span><x-icon name="arrow-right" :size="13" /></a>
                 @if(config('nai.demo_mode'))<span class="demo-chip">Demo</span>@endif
                 <div class="dropdown">
                     <button class="icon-btn bell-btn" id="bellBtn" aria-label="Notifications ({{ $navUnread }} unread)"><x-icon name="bell" :size="17" />@if($navUnread)<span class="bell-count">{{ min($navUnread, 99) }}</span>@endif</button>

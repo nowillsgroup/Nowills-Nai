@@ -262,7 +262,7 @@ class WebInstaller
         \Illuminate\Support\Facades\DB::transaction(function () use ($data, $existingAdmin): void {
             \App\Models\Setting::updateOrCreate(['key' => 'workspace_name'], ['value' => $data['workspace']]);
             \App\Models\ArenaConnection::firstOrCreate([], [
-                'chat_path' => config('nai.arena.chat_path'), 'health_path' => config('nai.arena.health_path'), 'status' => 'disconnected',
+                'provider' => 'openai', 'model' => 'gpt-5.4', 'chat_path' => config('nai.arena.chat_path'), 'health_path' => config('nai.arena.health_path'), 'status' => 'disconnected',
             ]);
             if (! $existingAdmin) {
                 \App\Models\User::create([

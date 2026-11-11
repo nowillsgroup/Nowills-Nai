@@ -149,7 +149,7 @@ The schedule runs monitoring when enabled, prunes old monitoring history, prunes
 2. Enable **Force HTTPS Redirect** once the certificate is active.
 3. Visit `https://your-domain.com/up` — it should return HTTP 200.
 4. Sign in at `https://your-domain.com/login` with the administrator created by the installer.
-5. In **Settings**, configure the real NAi engine endpoint/key only if you have an approved endpoint. NAi does not fabricate engine replies.
+5. In **Settings**, select **OpenAI coding assistant**, enter your OpenAI API key and model, save, then use **Test NAi connection**. Open **NAi · Engine** to chat. See the section below. NAi does not fabricate replies.
 
 ## Recovery and updates
 
@@ -158,9 +158,45 @@ The schedule runs monitoring when enabled, prunes old monitoring history, prunes
 - **Cleanup failed:** remove the three files listed above manually; the installed lock remains authoritative.
 - **Updating an installed site:** this one-time installer is not an update tool. Preserve `.env`, `storage/`, and the database. Deploy application updates through the normal Git/cPanel deploy path or a maintenance release, then run migrations with the host’s PHP CLI. Do not re-extract a fresh installer over a live site.
 
+## Set up the coding assistant
+
+1. Create an OpenAI API account and API key at https://platform.openai.com/.
+   ChatGPT subscriptions do not automatically include API credits. API access,
+   model availability and billing depend on your OpenAI account.
+2. Sign in to your own NAi installation over HTTPS as an administrator. In
+   **Settings**, select **OpenAI coding assistant**, use `gpt-5.4` (or a model
+   available to your account), and enter your API key in the password field.
+   Save and select **Test NAi connection**. Do not share the key in chat.
+3. Open **NAi · Engine** to ask coding questions. The test checks model lookup;
+   send a message to verify generation. Errors such as missing model access or
+   exhausted billing are reported rather than simulated.
+
+NAi sends the prompt, recent conversation messages and workspace metadata to
+OpenAI. Scoped chats also send details of the selected record. Do not include
+credentials or other data you do not wish to send. The key is encrypted at rest.
+The assistant answers in chat; it cannot automatically read/edit repositories,
+run commands, or deploy code. Paste relevant code into the conversation.
+
 ## Updating an existing install
 
-Upload the new files over the old ones. CSS and JS URLs carry a content-derived
+Back up the database, `.env`, `storage/`, and application files first. This
+release adds database columns and **requires migrations before using the new
+code**. Deploy the application files without replacing `.env`, `storage/`,
+existing uploads, or the database; do not run the fresh-install script over an
+existing site. Using your host's PHP CLI / cPanel Terminal in the project root,
+run:
+
+```
+php artisan migrate --force
+php artisan optimize:clear
+```
+
+Existing custom bridge settings remain unchanged until an administrator selects
+OpenAI and saves. Switching providers clears the old provider key unless a new
+key is supplied. If cPanel Terminal or PHP CLI is unavailable, ask your host to
+run the commands; the web installer is for fresh installs, not upgrades.
+
+CSS and JS URLs carry a content-derived
 `?v=` version, so browsers and any proxy/CDN pick up the new stylesheet on the
 next request without a manual cache purge.
 
@@ -194,8 +230,8 @@ seconds). On slow shared hosting, lower it:
 ARENA_PROBE_BUDGET=1.5
 ```
 
-When the budget runs out NAi reports the result as unknown and still attempts
-the frame, so a sluggish destination can never hold the page hostage.
+The budget limits HTTP request time, but DNS resolution and server delays can
+still add time. An inconclusive result may still cause the frame to be attempted.
 
 ## Troubleshooting
 

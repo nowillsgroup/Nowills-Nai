@@ -21,7 +21,7 @@ class DemoSeeder extends Seeder
     public function run(): void
     {
         Setting::updateOrCreate(['key' => 'workspace_name'], ['value' => 'Nowills Group']);
-        ArenaConnection::firstOrCreate([], ['chat_path' => '/v1/chat', 'health_path' => '/v1/health', 'status' => 'disconnected']);
+        ArenaConnection::firstOrCreate([], ['provider' => 'openai', 'model' => \App\Services\ArenaGateway::DEFAULT_OPENAI_MODEL, 'chat_path' => '/v1/chat', 'health_path' => '/v1/health', 'status' => 'disconnected']);
 
         $admin = User::firstOrCreate(['email' => 'demo@nowills.group'], ['name' => 'Nowills Admin', 'password' => Hash::make('Nowills-Demo-2026!'), 'role' => 'admin', 'title' => 'Platform Administrator']);
         $ama = User::firstOrCreate(['email' => 'ama@nowills.group'], ['name' => 'Ama Mensah', 'password' => Hash::make(Str::random(32)), 'role' => 'operator', 'title' => 'Engineering Lead']);
