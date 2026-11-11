@@ -41,7 +41,7 @@ Never copy the whole project into `public_html` when a separate document root is
 
 ## 3. PHP version and extensions
 
-In **MultiPHP Manager / Select PHP Version**, select PHP **8.2+** (8.3 or 8.4 recommended) and enable:
+In **MultiPHP Manager / Select PHP Version**, select PHP **8.3+** (8.4 recommended) and enable:
 
 ```text
 pdo_mysql, mbstring, openssl, ctype, fileinfo, tokenizer, dom, xml, xmlwriter,
@@ -232,6 +232,13 @@ ARENA_PROBE_BUDGET=1.5
 
 The budget limits HTTP request time, but DNS resolution and server delays can
 still add time. An inconclusive result may still cause the frame to be attempted.
+
+## AI Workforce foundation
+
+The initial company-scoped workforce module supports an approval-gated internal
+Operations work item only. It is not a complete enterprise workforce platform;
+legacy NAi records remain globally scoped. For configuration, queue/cron and
+security limitations see `docs/WORKFORCE.md` in this package.
 
 ## Troubleshooting
 

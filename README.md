@@ -8,7 +8,7 @@
 
 | Layer | Technology |
 |---|---|
-| Backend | PHP 8.2+ / Laravel 12 |
+| Backend | PHP 8.3+ / Laravel 12 |
 | Database | MySQL 8 / MariaDB 10.6+ (`pdo_mysql`) |
 | Frontend | Server-rendered Blade, plain CSS, vanilla JavaScript |
 | AI engine | NAi via configurable upstream HTTP gateway |
@@ -41,7 +41,7 @@
 
 ## Requirements
 
-- PHP **8.2+** with extensions: `pdo`, `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `xmlwriter`, `ctype`, `fileinfo`, `curl`, `dom`
+- PHP **8.3+** with extensions: `pdo`, `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `xmlwriter`, `ctype`, `fileinfo`, `curl`, `dom`
 - MySQL **8.0+** or MariaDB **10.6+**
 - Composer **2.x**
 - A web server (Nginx/Apache + PHP-FPM) for production, or `php artisan serve` for local evaluation
@@ -177,7 +177,7 @@ composer install
 php vendor/bin/phpunit
 ```
 
-Feature tests cover the inventory, projects, NAi adapter boundary, roles, exports, safe workspace import, and the monitoring/incident lifecycle. Tests use an in-memory SQLite database by default (`phpunit.xml`). Production runtime remains MySQL. GitHub Actions (`.github/workflows/ci.yml`) runs the suite on PHP 8.2–8.4 and validates migrations against a real MySQL server without Docker.
+Feature tests cover the inventory, projects, NAi adapter boundary, roles, exports, safe workspace import, and the monitoring/incident lifecycle. Tests use an in-memory SQLite database by default (`phpunit.xml`). Production runtime remains MySQL. GitHub Actions (`.github/workflows/ci.yml`) runs the suite on PHP 8.3–8.4 and validates migrations against a real MySQL server without Docker.
 
 ## Useful commands
 

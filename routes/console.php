@@ -12,3 +12,6 @@ Schedule::command('nai:monitor')->everyFiveMinutes()->withoutOverlapping()->when
 
 Schedule::command('nai:monitor-prune')->dailyAt('03:15')->withoutOverlapping();
 Schedule::command('nai:import-prune')->hourly()->withoutOverlapping();
+
+// A dedicated database queue; the scheduler must be invoked by cron.
+Schedule::command('queue:work database --queue=workforce --stop-when-empty --max-time=50 --timeout=75 --tries=1')->everyMinute()->withoutOverlapping(5);

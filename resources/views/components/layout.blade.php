@@ -31,6 +31,7 @@
             <a href="{{ route('dashboard.home') }}" class="nav-item {{ request()->routeIs('dashboard*') ? 'active' : '' }}"><x-icon name="dashboard" :size="18" /><span>Dashboard</span></a>
             <a href="{{ route('arena.index') }}" class="nav-item {{ request()->routeIs('arena.*') && !request()->routeIs('arena.browser*') ? 'active' : '' }}"><x-icon name="sparkles" :size="18" /><span>NAi</span><span class="nav-pill">Engine</span></a>
             <a href="{{ route('arena.browser') }}" class="nav-item nav-arena {{ request()->routeIs('arena.browser*') ? 'active' : '' }}"><x-icon name="globe" :size="18" /><span>NAi</span><span class="nav-pill">Browser</span></a>
+            <a href="{{ route('workforce.index') }}" class="nav-item {{ request()->routeIs('workforce.*') ? 'active' : '' }}"><x-icon name="sparkles" :size="18" /><span>AI Workforce</span></a>
             <div class="nav-label">Manage</div>
             <a href="{{ route('inventory.index','applications') }}" class="nav-item {{ request()->is('inventory/applications*') ? 'active' : '' }}"><x-icon name="apps" :size="18" /><span>Applications</span></a>
             <a href="{{ route('inventory.index','repositories') }}" class="nav-item {{ request()->is('inventory/repositories*') ? 'active' : '' }}"><x-icon name="git" :size="18" /><span>Repositories</span></a>

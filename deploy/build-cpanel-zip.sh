@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build the flat, prebuilt, browser-installable NAi cPanel ZIP.
 # Usage: bash deploy/build-cpanel-zip.sh /absolute/path/NAi-cPanel-Direct-Install.zip
-# Requires local PHP 8.2+, Composer 2, git, tar, zip, unzip. The destination server needs none of these except PHP/MySQL.
+# Requires local PHP 8.3+, Composer 2, git, tar, zip, unzip. The destination server needs none of these except PHP/MySQL.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,7 +14,7 @@ for tool in git tar zip unzip sha256sum; do
 done
 command -v "$PHP_BIN" >/dev/null || { echo "Missing PHP_BIN: $PHP_BIN" >&2; exit 1; }
 command -v "$COMPOSER_BIN" >/dev/null || { echo "Missing COMPOSER_BIN: $COMPOSER_BIN" >&2; exit 1; }
-"$PHP_BIN" -r 'exit(PHP_VERSION_ID >= 80200 ? 0 : 1);' || { echo 'PHP 8.2+ is required to build.' >&2; exit 1; }
+"$PHP_BIN" -r 'exit(PHP_VERSION_ID >= 80300 ? 0 : 1);' || { echo 'PHP 8.3+ is required to build.' >&2; exit 1; }
 
 cd "$ROOT"
 if [[ -n "$(git status --porcelain)" ]]; then
@@ -107,7 +107,7 @@ printf '[NAi package] Validating release\n'
 for required in .htaccess install.php START-HERE.txt README.md SETUP-TOKEN.txt build/installer-config.php \
                 build/vendor/autoload.php public/install.php public/index.php public/.htaccess \
                 public/uploads/.htaccess public/css/nai.css public/css/arena-browser.css \
-                public/js/arena-browser.js docs/INSTALL-CPANEL.md docs/MODULES.md artisan composer.lock; do
+                public/js/arena-browser.js docs/INSTALL-CPANEL.md docs/MODULES.md docs/WORKFORCE.md artisan composer.lock; do
   [[ -f "$required" ]] || { echo "Missing release file: $required" >&2; exit 1; }
 done
 if find "$STAGE" -type f \( -name '.env' -o -name '*.sqlite' -o -name '*.sqlite3' -o -name '*.log' \) | grep -q .; then

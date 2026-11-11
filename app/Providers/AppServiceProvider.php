@@ -9,7 +9,10 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+        $this->app->bind(\App\Services\Workforce\Planner::class, \App\Services\Workforce\OpenAiPlanner::class);
+    }
 
     public function boot(): void
     {

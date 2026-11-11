@@ -14,6 +14,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WorkforceController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -32,6 +33,16 @@ Route::middleware([\App\Http\Middleware\PreviewDemoEntry::class, 'auth'])->group
     // Explicit dashboard URL so the sidebar can still open the dashboard when
     // the local preview root is configured to land on NAi.
     Route::get('/dashboard', DashboardController::class)->name('dashboard.home');
+
+    Route::get('/workforce', [WorkforceController::class, 'index'])->name('workforce.index');
+    Route::post('/workforce/companies', [WorkforceController::class, 'createCompany'])->name('workforce.companies.create');
+    Route::get('/workforce/companies/{company}', [WorkforceController::class, 'show'])->name('workforce.company');
+    Route::post('/workforce/companies/{company}/members', [WorkforceController::class, 'addMember'])->name('workforce.members');
+    Route::delete('/workforce/companies/{company}/members/{member}', [WorkforceController::class, 'removeMember'])->name('workforce.members.remove');
+    Route::post('/workforce/companies/{company}/items/{item}/complete', [WorkforceController::class, 'completeItem'])->name('workforce.items.complete');
+    Route::post('/workforce/companies/{company}/assignments', [WorkforceController::class, 'submit'])->middleware('throttle:20,1')->name('workforce.submit');
+    Route::post('/workforce/companies/{company}/assignments/{assignment}/retry', [WorkforceController::class, 'retry'])->middleware('throttle:20,1')->name('workforce.retry');
+    Route::post('/workforce/companies/{company}/assignments/{assignment}/decision', [WorkforceController::class, 'decide'])->middleware('throttle:30,1')->name('workforce.decide');
 
     Route::get('/search', SearchController::class)->name('search');
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');

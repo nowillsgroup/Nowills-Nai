@@ -4,7 +4,7 @@
 
 - Ubuntu/Debian or similar Linux host
 - Nginx or Apache
-- PHP-FPM 8.2+ with `pdo_mysql`, `mbstring`, `openssl`, `xml`, `xmlwriter`, `curl`, `zip`, `ctype`, `fileinfo`, `tokenizer`
+- PHP-FPM 8.3+ with `pdo_mysql`, `mbstring`, `openssl`, `xml`, `xmlwriter`, `curl`, `zip`, `ctype`, `fileinfo`, `tokenizer`
 - MySQL 8 or MariaDB 10.6+
 - Composer 2
 

@@ -40,6 +40,7 @@ class PreviewDemoEntry
 
         if ($previewEnabled && $request->routeIs('dashboard')) {
             $landing = config('nai.preview_landing');
+            if ($landing === 'workforce') return redirect()->route('workforce.index');
             if ($landing === 'arena') return redirect()->route('arena.index');
             if ($landing === 'browser') return redirect()->route('arena.browser');
         }

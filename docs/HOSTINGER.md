@@ -1,6 +1,6 @@
 # Installing NAi on Hostinger (VPS or cPanel) — direct from Git
 
-NAi is a standard Laravel 12 app (PHP 8.2+, MySQL). There is **no Node build step**
+NAi is a standard Laravel 12 app (PHP 8.3+, MySQL). There is **no Node build step**
 and **no Docker** — you clone the repo, run one installer, and point your domain
 at the `public/` folder. This guide covers both Hostinger products:
 
@@ -16,14 +16,14 @@ at the `public/` folder. This guide covers both Hostinger products:
 
 | Requirement | Value |
 |---|---|
-| PHP | 8.2, 8.3, or 8.4 |
+| PHP | 8.3 or 8.4 |
 | PHP extensions | `pdo_mysql`, `mbstring`, `openssl`, `xml`, `xmlwriter`, `curl`, `zip`, `ctype`, `fileinfo`, `tokenizer` |
 | Database | MySQL 8 / MariaDB 10.6+ |
 | Composer | 2.x (the installer downloads it locally if missing) |
 | Disk | ~100 MB for the app + dependencies |
 
 On cPanel, enable the extensions in **MultiPHP Manager → PHP Extensions** and set
-the domain to PHP 8.2+ in **MultiPHP Manager**. On a VPS, install them with your
+the domain to PHP 8.3+ in **MultiPHP Manager**. On a VPS, install them with your
 package manager (e.g. `apt install php8.3-{fpm,mysql,mbstring,xml,curl,zip}`).
 
 ---
@@ -53,7 +53,7 @@ bash install.sh
 ```
 
 The installer will:
-1. Find a PHP 8.2+ binary and verify extensions.
+1. Find a PHP 8.3+ binary and verify extensions.
 2. Install Composer dependencies (`--no-dev`).
 3. Create `.env`, generate `APP_KEY`, and set production defaults.
 4. Ask for your `APP_URL` and database credentials (or read them from env vars).
@@ -113,7 +113,7 @@ Use this when you have cPanel (shared or VPS-with-cPanel) rather than full root.
 1. **MySQL® Databases**: create a database (e.g. `cpuser_nai`) and a user, then
    **Add User To Database** with ALL PRIVILEGES. Note the full names — cPanel
    prefixes them with your account username.
-2. **MultiPHP Manager**: set your domain to **PHP 8.2+**.
+2. **MultiPHP Manager**: set your domain to **PHP 8.3+**.
 3. **MultiPHP Manager → PHP Extensions**: enable `pdo_mysql`, `mbstring`, `openssl`,
    `xml`, `xmlwriter`, `curl`, `zip`, `ctype`, `fileinfo`, `tokenizer`.
 
@@ -200,7 +200,7 @@ preserves `.env`, `storage/`, and the database.
 | `.env` values ignored | You cached config before editing. Run `php artisan config:clear && php artisan config:cache`. |
 | `could not find driver` | Enable `pdo_mysql` in MultiPHP / install `php-mysql`. |
 | Mixed content / insecure cookies | Set `APP_URL=https://…` and `SESSION_SECURE_COOKIE=true`, then re-cache config. |
-| cPanel deploy fails on PHP version | Set the domain to PHP 8.2+ in MultiPHP Manager; the script auto-detects `ea-php8x`. |
+| cPanel deploy fails on PHP version | Set the domain to PHP 8.3+ in MultiPHP Manager; the script auto-detects `ea-php8x`. |
 
 ## Verify the install
 

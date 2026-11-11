@@ -11,7 +11,7 @@
 #   DEPLOYPATH=/home/$USER/nai bash deploy/cpanel.sh
 #
 # Required cPanel setup (one time):
-#   - MultiPHP Manager: set the domain to PHP 8.2+ with pdo_mysql, mbstring,
+#   - MultiPHP Manager: set the domain to PHP 8.3+ with pdo_mysql, mbstring,
 #     openssl, xml, curl, zip, ctype, fileinfo, tokenizer enabled.
 #   - MySQL Databases: create a database + user, add user to database.
 #   - Create /home/$USER/nai/.env (copy of .env.example) with DB credentials,
@@ -32,14 +32,13 @@ PHP_BIN="${PHP_BIN:-}"
 if [ -z "$PHP_BIN" ]; then
   for c in /opt/cpanel/ea-php84/root/usr/bin/php \
            /opt/cpanel/ea-php83/root/usr/bin/php \
-           /opt/cpanel/ea-php82/root/usr/bin/php \
            /usr/local/bin/php php; do
-    if command -v "$c" >/dev/null 2>&1 && "$c" -r 'exit(version_compare(PHP_VERSION,"8.2.0",">=")?0:1);' 2>/dev/null; then
+    if command -v "$c" >/dev/null 2>&1 && "$c" -r 'exit(version_compare(PHP_VERSION,"8.3.0",">=")?0:1);' 2>/dev/null; then
       PHP_BIN="$c"; break
     fi
   done
 fi
-[ -n "$PHP_BIN" ] || die "No PHP 8.2+ found. Set the domain to PHP 8.2+ in MultiPHP Manager."
+[ -n "$PHP_BIN" ] || die "No PHP 8.3+ found. Set the domain to PHP 8.3+ in MultiPHP Manager."
 
 COMPOSER_BIN="${COMPOSER_BIN:-}"
 if [ -z "$COMPOSER_BIN" ]; then

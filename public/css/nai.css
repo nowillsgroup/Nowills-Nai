@@ -571,3 +571,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .arena-launch .icon:last-child{opacity:.8}
 .nav-arena .nav-pill{background:rgba(56,189,248,.12);color:#7dd3fc;border-color:rgba(56,189,248,.25)}
 @media(max-width:900px){.arena-launch span{display:none}.arena-launch{padding:8px 10px}}
+
+/* Workforce overview */
+.workforce-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.workforce-stats h2{margin:8px 0 0}

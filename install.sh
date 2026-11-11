@@ -8,7 +8,7 @@
 #   bash install.sh
 #
 # Optional environment variables (skip the matching prompt):
-#   PHP_BIN          Path to a PHP 8.2+ binary (auto-detected otherwise)
+#   PHP_BIN          Path to a PHP 8.3+ binary (auto-detected otherwise)
 #   COMPOSER_BIN     Path to composer (auto-detected otherwise)
 #   APP_URL          Public URL, e.g. https://nai.yourdomain.com
 #   DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD
@@ -31,28 +31,27 @@ warn() { printf '    \033[1;33m!\033[0m %s\n' "$*"; }
 die()  { printf '\n\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
 # ---------------------------------------------------------------------------
-# 1. Locate a suitable PHP binary (>= 8.2)
+# 1. Locate a suitable PHP binary (>= 8.3)
 # ---------------------------------------------------------------------------
 say "Checking PHP"
 php_ok() {
   local bin="$1"
   command -v "$bin" >/dev/null 2>&1 || return 1
-  "$bin" -r 'exit(version_compare(PHP_VERSION, "8.2.0", ">=") ? 0 : 1);' >/dev/null 2>&1
+  "$bin" -r 'exit(version_compare(PHP_VERSION, "8.3.0", ">=") ? 0 : 1);' >/dev/null 2>&1
 }
 
 PHP_BIN="${PHP_BIN:-}"
 if [ -n "$PHP_BIN" ]; then
-  php_ok "$PHP_BIN" || die "PHP_BIN=$PHP_BIN is not PHP 8.2+."
+  php_ok "$PHP_BIN" || die "PHP_BIN=$PHP_BIN is not PHP 8.3+."
 else
-  for c in php8.4 php8.3 php8.2 php \
+  for c in php8.4 php8.3 php \
            /opt/cpanel/ea-php84/root/usr/bin/php \
            /opt/cpanel/ea-php83/root/usr/bin/php \
-           /opt/cpanel/ea-php82/root/usr/bin/php \
            /usr/local/bin/php; do
     if php_ok "$c"; then PHP_BIN="$c"; break; fi
   done
 fi
-[ -n "$PHP_BIN" ] || die "No PHP 8.2+ binary found. Install PHP 8.2/8.3/8.4 (cPanel: MultiPHP Manager) or set PHP_BIN."
+[ -n "$PHP_BIN" ] || die "No PHP 8.3+ binary found. Install PHP 8.3/8.4 (cPanel: MultiPHP Manager) or set PHP_BIN."
 ok "Using $PHP_BIN ($("$PHP_BIN" -r 'echo PHP_VERSION;'))"
 
 # Required extensions (pdo_mysql is needed for the MySQL production target).
